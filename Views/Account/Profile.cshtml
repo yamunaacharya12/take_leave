@@ -1,0 +1,163 @@
+﻿@model Take_Leave.Models.ApplicationUser
+@{
+    ViewData["Title"] = User.IsInRole("Admin") ? "My Profile - Admin" : "My Profile";
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-user-shield" style="color:var(--primary);"></i> @(User.IsInRole("Admin") ? "Admin Profile" : "My Profile")</h1>
+        <p>Manage your account information and security settings</p>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success"><i class="fas fa-check-circle me-1"></i> @TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger"><i class="fas fa-exclamation-circle me-1"></i> @TempData["Error"]</div>
+}
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="section-card h-100">
+            <div class="card-body text-center">
+                <div style="width:96px; height:96px; border-radius:50%; background:linear-gradient(135deg,#e8edf9,#dbe4fb); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:34px; margin:0 auto; border:3px solid #fff; box-shadow:0 4px 14px rgba(26,58,110,.12);">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="fw-bold mt-3" style="font-size:17px; color:var(--primary);">@Model.FullName</div>
+                <div style="font-size:12.5px; color:var(--text-muted);">@Model.Designation</div>
+                <span class="badge rounded-pill mt-2" style="background:var(--primary); font-size:11px; font-weight:700; padding:5px 14px;">
+                    <i class="fas fa-shield-alt me-1"></i>@Model.UserRole
+                </span>
+
+                <hr class="my-3" />
+
+                <div class="text-start" style="font-size:13px;">
+                    <div class="d-flex justify-content-between py-2 border-bottom"><span class="text-muted"><i class="fas fa-envelope me-1" style="width:14px;"></i>Email</span><span class="fw-semibold">@Model.Email</span></div>
+                    <div class="d-flex justify-content-between py-2 border-bottom"><span class="text-muted"><i class="fas fa-building me-1" style="width:14px;"></i>Department</span><span class="fw-semibold">@(Model.Department?.Name ?? "—")</span></div>
+                    <div class="d-flex justify-content-between py-2"><span class="text-muted"><i class="fas fa-calendar me-1" style="width:14px;"></i>Since</span><span class="fw-semibold">@Model.RegistrationDate.ToString("MMM yyyy")</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="section-card mb-3">
+            <div class="card-header">
+                <h2><i class="fas fa-pen me-1"></i> Edit Account Information</h2>
+            </div>
+            <div class="card-body">
+                <form asp-controller="Account" asp-action="UpdateProfile" method="post" id="profileForm">
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" id="originalRole" value="@Model.UserRole" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Full Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fas fa-user" style="color:var(--text-faint);"></i></span>
+                                <input asp-for="FullName" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fas fa-envelope" style="color:var(--text-faint);"></i></span>
+                                <input value="@Model.Email" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Designation</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fas fa-id-badge" style="color:var(--text-faint);"></i></span>
+                                <input asp-for="Designation" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Institution</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fas fa-university" style="color:var(--text-faint);"></i></span>
+                                <input value="Texas College of Management and IT (TCMIT)" class="form-control" readonly />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
+                                Role <i class="fas fa-exclamation-triangle ms-1" style="color:#d4a017; font-size:11px;" title="Changing your own role takes effect immediately"></i>
+                            </label>
+                            <select asp-for="UserRole" asp-items="Html.GetEnumSelectList<Take_Leave.Models.UserRole>()" class="form-select" id="roleSelect"></select>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Save Changes</button>
+                        <button type="reset" class="btn btn-outline-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="card-header">
+                <h2><i class="fas fa-lock me-1"></i> Change Password</h2>
+            </div>
+            <div class="card-body">
+                <form asp-controller="Account" asp-action="ChangePassword" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Current Password</label>
+                            <div class="input-group">
+                                <input type="password" name="CurrentPassword" class="form-control pwd-field" required />
+                                <button type="button" class="btn btn-outline-secondary js-toggle-pwd"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">New Password</label>
+                            <div class="input-group">
+                                <input type="password" name="NewPassword" class="form-control pwd-field" minlength="6" required />
+                                <button type="button" class="btn btn-outline-secondary js-toggle-pwd"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Confirm Password</label>
+                            <div class="input-group">
+                                <input type="password" name="ConfirmPassword" class="form-control pwd-field" minlength="6" required />
+                                <button type="button" class="btn btn-outline-secondary js-toggle-pwd"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-accent"><i class="fas fa-key me-1"></i> Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Show/hide toggle for every password field on this page
+        document.querySelectorAll('.js-toggle-pwd').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var input = btn.closest('.input-group').querySelector('.pwd-field');
+                var icon = btn.querySelector('i');
+                var showing = input.type === 'text';
+                input.type = showing ? 'password' : 'text';
+                icon.classList.toggle('fa-eye', showing);
+                icon.classList.toggle('fa-eye-slash', !showing);
+            });
+        });
+
+        // Confirm before submitting a self role-change
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            var original = document.getElementById('originalRole').value;
+            var chosen = document.getElementById('roleSelect').value;
+            if (original !== chosen) {
+                var ok = confirm('You are about to change your own role from "' + original + '" to "' + chosen + '". This takes effect immediately. Continue?');
+                if (!ok) e.preventDefault();
+            }
+        });
+    </script>
+}

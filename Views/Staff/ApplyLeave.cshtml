@@ -1,0 +1,123 @@
+﻿@model Take_Leave.Models.ViewModels.LeaveRequestViewModel
+@{
+    ViewData["Title"] = "Apply Leave - Staff";
+    var currentUser = ViewBag.CurrentUser as Take_Leave.Models.ApplicationUser;
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-plus-circle" style="color:var(--primary);"></i> Apply for Leave</h1>
+        <p>Submit a new leave request for approval</p>
+    </div>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<div class="section-card">
+    <div class="card-header">
+        <h2><i class="fas fa-file-alt me-1"></i> Leave Application Form</h2>
+    </div>
+    <div class="card-body">
+        <form asp-controller="Staff" asp-action="ApplyLeave" method="post" enctype="multipart/form-data">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Leave Type</label>
+                    <select asp-for="LeaveType" asp-items="Html.GetEnumSelectList<Take_Leave.Models.LeaveType>()" class="form-select" required>
+                        <option value="">Select leave type</option>
+                    </select>
+                    <span asp-validation-for="LeaveType" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Total Days</label>
+                    <input asp-for="TotalDays" id="totalDaysInput" type="number" min="1" class="form-control" required />
+                    <span asp-validation-for="TotalDays" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">From Date</label>
+                    <input asp-for="StartDate" id="startDate" type="date" class="form-control" required />
+                    <span asp-validation-for="StartDate" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">To Date</label>
+                    <input asp-for="EndDate" id="endDate" type="date" class="form-control" required />
+                    <span asp-validation-for="EndDate" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Reason / Description</label>
+                    <textarea asp-for="Reason" class="form-control" rows="4" placeholder="Describe the reason for leave..." required></textarea>
+                    <span asp-validation-for="Reason" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Supporting Document (Optional)</label>
+                    <label for="document" style="display:block; border:1.5px dashed var(--border); border-radius:10px; padding:1.5rem; text-align:center; background:#f8fafc; cursor:pointer;">
+                        <i class="fas fa-cloud-upload-alt" style="font-size:22px; color:var(--text-faint);"></i>
+                        <div style="font-size:13px; color:var(--text-muted); margin-top:6px;" id="fileLabel">Click to upload or drag and drop</div>
+                        <div style="font-size:11px; color:var(--text-faint);">PDF, JPG, PNG up to 5MB</div>
+                    </label>
+                    <input type="file" id="document" name="document" class="d-none" accept=".pdf,.jpg,.jpeg,.png" />
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-1"></i> Submit Application</button>
+                <a asp-action="Dashboard" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (currentUser != null)
+{
+    <div class="section-card">
+        <div class="card-header">
+            <h2><i class="fas fa-balance-scale me-1"></i> Your Leave Balance</h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-6 col-md-4">
+                    <div class="fw-semibold" style="font-size:13px; color:var(--primary);">Annual Leave</div>
+                    <div style="font-size:20px; font-weight:800;">@currentUser.AnnualLeaveBalance <span style="font-size:12px; color:var(--text-faint); font-weight:500;">days left</span></div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="fw-semibold" style="font-size:13px; color:var(--primary);">Sick Leave</div>
+                    <div style="font-size:20px; font-weight:800;">@currentUser.SickLeaveBalance <span style="font-size:12px; color:var(--text-faint); font-weight:500;">days left</span></div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <div class="fw-semibold" style="font-size:13px; color:var(--primary);">Emergency Leave</div>
+                    <div style="font-size:20px; font-weight:800;">@currentUser.EmergencyLeaveBalance <span style="font-size:12px; color:var(--text-faint); font-weight:500;">days left</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Auto-calculate total days from the date range (still editable by hand)
+        (function() {
+            var start = document.getElementById('startDate');
+            var end = document.getElementById('endDate');
+            var totalDays = document.getElementById('totalDaysInput');
+
+            function recalc() {
+                if (start.value && end.value) {
+                    var s = new Date(start.value);
+                    var e = new Date(end.value);
+                    var diff = Math.round((e - s) / (1000 * 60 * 60 * 24)) + 1;
+                    if (diff > 0) totalDays.value = diff;
+                }
+            }
+            start.addEventListener('change', recalc);
+            end.addEventListener('change', recalc);
+
+            document.getElementById('document').addEventListener('change', function(e) {
+                var label = document.getElementById('fileLabel');
+                label.textContent = e.target.files.length ? e.target.files[0].name : 'Click to upload or drag and drop';
+            });
+        })();
+    </script>
+}

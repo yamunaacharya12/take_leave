@@ -1,0 +1,134 @@
+﻿@model Take_Leave.Models.ViewModels.DepartmentHeadDashboardViewModel
+
+@{
+    ViewData["Title"] = "Department Head Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <div>
+            <h1 class="m-0 text-dark fw-bold" style="font-size: 1.5rem;">
+                <i class="fas fa-th-large me-2 text-accent"></i>@Model.Department.Name Dashboard
+            </h1>
+            <!-- Identity and Scope Badge -->
+            <div class="mt-2">
+                <span class="badge bg-primary text-white shadow-sm">
+                    <i class="fas fa-user-shield me-1"></i> Department Head ID: @(Model.Department.HeadUserId.Length > 8 ? Model.Department.HeadUserId.Substring(0, 8) + "..." : Model.Department.HeadUserId)
+                </span>
+                <span class="text-muted small ms-2 fw-medium">
+                    <i class="fas fa-building me-1"></i> Managing: @Model.Department.Name
+                </span>
+            </div>
+        </div>
+        <div class="text-secondary small fw-medium">
+            <i class="fas fa-clock me-1"></i> System Monitor Active
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert bg-success-subtle text-success border border-success-subtle alert-dismissible fade show shadow-sm p-3 rounded-2 mb-4 small" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Stat Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card pink shadow-sm h-100">
+                <div class="accent-bar"></div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">TOTAL STAFF</div>
+                        <div class="stat-value">@Model.TotalStaff</div>
+                    </div>
+                    <div class="icon-wrap"><i class="fas fa-users"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card gold shadow-sm h-100">
+                <div class="accent-bar"></div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">PENDING REGISTRATIONS</div>
+                        <div class="stat-value">@Model.PendingRegistrationsCount</div>
+                    </div>
+                    <div class="icon-wrap"><i class="fas fa-user-clock"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card purple shadow-sm h-100">
+                <div class="accent-bar"></div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">PENDING LEAVES</div>
+                        <div class="stat-value">@Model.PendingLeavesCount</div>
+                    </div>
+                    <div class="icon-wrap"><i class="fas fa-file-invoice"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="stat-card navy shadow-sm h-100">
+                <div class="accent-bar"></div>
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label">APPROVED THIS MONTH</div>
+                        <div class="stat-value">@Model.ApprovedLeavesThisMonth</div>
+                    </div>
+                    <div class="icon-wrap"><i class="fas fa-calendar-check"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Registrations Table -->
+    <div class="section-card shadow-sm">
+        <div class="card-header">
+            <h2 class="m-0"><i class="fas fa-clipboard-list me-2 text-accent"></i>Pending Staff Registrations</h2>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.PendingRegistrations != null && Model.PendingRegistrations.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light text-secondary">
+                            <tr>
+                                <th class="border-0 ps-3">Employee Name</th>
+                                <th class="border-0">Employee ID</th>
+                                <th class="border-0">Email Address</th>
+                                <th class="border-0 text-end pe-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-dark">
+                            @foreach (var user in Model.PendingRegistrations)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-semibold">@user.FullName</td>
+                                    <td><span class="badge bg-light text-dark border">@user.EmployeeId</span></td>
+                                    <td><a href="mailto:@user.Email" class="text-decoration-none text-primary">@user.Email</a></td>
+                                    <td class="text-end pe-3">
+                                        <form asp-controller="DepartmentHead" asp-action="ApproveUser" method="post" style="display:inline">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="btn btn-xs btn-success shadow-sm">Approve</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center p-5 border-top bg-light text-muted">
+                    <p class="mb-0">No registration entities are waiting in the validation queue.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

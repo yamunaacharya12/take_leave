@@ -1,0 +1,301 @@
+﻿@model List<Take_Leave.Models.ActivityLog>
+@{
+    ViewData["Title"] = "Notification Logs - Admin";
+    var categories = Model?.Select(l => l.Category).Distinct().OrderBy(c => c).ToList() ?? new List<string>();
+    int totalEvents = Model?.Count ?? 0;
+    int leaveEvents = Model?.Count(l => l.Category == "Leave") ?? 0;
+    int securityEvents = Model?.Count(l => l.Category == "Security") ?? 0;
+    int systemEvents = Model?.Count(l => l.Category == "System") ?? 0;
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-history" style="color:var(--primary);"></i> Notification Logs</h1>
+        <p>Audit trail of all system activities and events</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="ExportLogs" class="btn btn-outline-primary btn-sm"><i class="fas fa-download me-1"></i> Export Logs</a>
+        <form asp-action="ClearLogs" method="post" id="clearLogsForm">
+            <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash me-1"></i> Clear Logs</button>
+        </form>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card navy">
+            <div class="accent-bar"></div>
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">TOTAL EVENTS</div>
+                    <div class="stat-value">@totalEvents</div>
+                </div>
+                <div class="icon-wrap"><i class="fas fa-list"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card gold">
+            <div class="accent-bar"></div>
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">LEAVE EVENTS</div>
+                    <div class="stat-value">@leaveEvents</div>
+                </div>
+                <div class="icon-wrap"><i class="fas fa-calendar"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card pink">
+            <div class="accent-bar"></div>
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">SECURITY EVENTS</div>
+                    <div class="stat-value">@securityEvents</div>
+                </div>
+                <div class="icon-wrap"><i class="fas fa-shield-alt"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card green">
+            <div class="accent-bar"></div>
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">SYSTEM EVENTS</div>
+                    <div class="stat-value">@systemEvents</div>
+                </div>
+                <div class="icon-wrap"><i class="fas fa-cogs"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section-card">
+    <div class="card-body">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="position-relative">
+                    <i class="fas fa-search" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-faint); font-size:13px;"></i>
+                    <input type="text" id="logSearch" class="form-control" style="padding-left:36px;" placeholder="Search log entries..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select id="logCategoryFilter" class="form-select">
+                    <option value="">All Categories</option>
+                    @foreach (var c in categories)
+                    {
+                        <option value="@c">@c</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select id="logDateFilter" class="form-select">
+                    <option value="0">All Time</option>
+                    <option value="7" selected>Last 7 Days</option>
+                    <option value="30">Last 30 Days</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section-card">
+    <div class="card-header">
+        <h2><i class="fas fa-stream me-1"></i> Activity Log Feed</h2>
+    </div>
+    <div class="card-body p-0">
+        @if (Model != null && Model.Any())
+        {
+            <div id="logFeed">
+                @foreach (var log in Model)
+                {
+                    string color = log.Category switch
+                    {
+                        "Leave" => "#16a34a",
+                        "Staff" => "var(--primary)",
+                        "Security" => "var(--accent)",
+                        "Notice" => "var(--primary)",
+                        "System" => "#d4a017",
+                        _ => "#94a3b8"
+                    };
+                    <div class="log-row" data-category="@log.Category" data-search="@log.Message.ToLower()" data-timestamp="@log.CreatedDate.ToString("o")">
+                        <div class="log-dot" style="background:@color;"></div>
+                        <div class="log-body">
+                            <span class="tag-pill" style="background:@color;">@log.Category</span>
+                            <div class="log-message">@log.Message</div>
+                            @{
+                                var meta = new List<string>();
+                                if (log.LeaveRequest?.User != null) meta.Add($"Re: {log.LeaveRequest.User.FullName}'s leave request");
+                                if (log.RecipientUser != null) meta.Add($"To: {log.RecipientUser.FullName}");
+                            }
+                            @if (meta.Any())
+                            {
+                                <div class="log-meta">@string.Join(" · ", meta)</div>
+                            }
+                        </div>
+                        <div class="log-time">@log.CreatedDate.ToString("MMM d, yyyy h:mm tt")</div>
+                    </div>
+                }
+            </div>
+            <div id="noLogMatch" class="empty-state d-none">
+                <i class="fas fa-search"></i>
+                No log entries match your filters.
+            </div>
+            <div class="d-flex justify-content-between align-items-center px-3 py-3 flex-wrap gap-2">
+                <span id="logPageInfo" style="font-size:12.5px; color:var(--text-faint);"></span>
+                <div id="logPager"></div>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-clipboard-list"></i>
+                No activity logged yet.
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .log-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 20px;
+        border-bottom: 0.5px solid #f1f5f9;
+    }
+
+        .log-row:last-child {
+            border-bottom: none;
+        }
+
+        .log-row:hover {
+            background: #f8fafc;
+        }
+
+    .log-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        margin-top: 6px;
+        flex-shrink: 0;
+    }
+
+    .log-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .log-message {
+        font-size: 13.5px;
+        color: var(--text-main);
+        margin-top: 6px;
+    }
+
+    .log-meta {
+        font-size: 11px;
+        color: var(--text-faint);
+        margin-top: 2px;
+    }
+
+    .log-time {
+        font-size: 11.5px;
+        color: var(--text-faint);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        (function() {
+            var pageSize = 8;
+            var currentPage = 1;
+            var allRows = Array.from(document.querySelectorAll('.log-row'));
+
+            function getFiltered() {
+                var term = document.getElementById('logSearch').value.trim().toLowerCase();
+                var cat = document.getElementById('logCategoryFilter').value;
+                var days = parseInt(document.getElementById('logDateFilter').value, 10);
+                var cutoff = days > 0 ? new Date(Date.now() - days * 86400000) : null;
+
+                return allRows.filter(function(row) {
+                    if (term && !row.dataset.search.includes(term)) return false;
+                    if (cat && row.dataset.category !== cat) return false;
+                    if (cutoff && new Date(row.dataset.timestamp) < cutoff) return false;
+                    return true;
+                });
+            }
+
+            function render() {
+                var filtered = getFiltered();
+                allRows.forEach(function(r) { r.style.display = 'none'; });
+
+                var totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+                if (currentPage > totalPages) currentPage = totalPages;
+
+                var start = (currentPage - 1) * pageSize;
+                var pageRows = filtered.slice(start, start + pageSize);
+                pageRows.forEach(function(r) { r.style.display = ''; });
+
+                document.getElementById('noLogMatch').classList.toggle('d-none', filtered.length !== 0);
+
+                var info = document.getElementById('logPageInfo');
+                info.textContent = filtered.length === 0
+                    ? 'No results'
+                    : 'Displaying ' + (start + 1) + ' to ' + Math.min(start + pageSize, filtered.length) + ' of ' + filtered.length + ' logs';
+
+                var pager = document.getElementById('logPager');
+                pager.innerHTML = '';
+                var prev = document.createElement('button');
+                prev.className = 'btn btn-outline-secondary btn-sm';
+                prev.textContent = 'Previous';
+                prev.disabled = currentPage === 1;
+                prev.onclick = function() { currentPage--; render(); };
+                pager.appendChild(prev);
+
+                for (var p = 1; p <= totalPages; p++) {
+                    (function(p) {
+                        var btn = document.createElement('button');
+                        btn.className = 'btn btn-sm ' + (p === currentPage ? 'btn-primary' : 'btn-outline-secondary');
+                        btn.style.marginLeft = '4px';
+                        btn.textContent = p;
+                        btn.onclick = function() { currentPage = p; render(); };
+                        pager.appendChild(btn);
+                    })(p);
+                }
+
+                var next = document.createElement('button');
+                next.className = 'btn btn-outline-secondary btn-sm';
+                next.style.marginLeft = '4px';
+                next.textContent = 'Next';
+                next.disabled = currentPage === totalPages;
+                next.onclick = function() { currentPage++; render(); };
+                pager.appendChild(next);
+            }
+
+            ['logSearch', 'logCategoryFilter', 'logDateFilter'].forEach(function(id) {
+                document.getElementById(id).addEventListener('input', function() { currentPage = 1; render(); });
+            });
+
+            if (allRows.length) render();
+        })();
+
+        document.getElementById('clearLogsForm')?.addEventListener('submit', function(e) {
+            if (!confirm('This will permanently delete all activity logs. Continue?')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+}

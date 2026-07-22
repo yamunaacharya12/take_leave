@@ -1,0 +1,174 @@
+﻿@model List<Take_Leave.Models.LeaveRequest>
+@{
+    ViewData["Title"] = "Leave Requests - Admin";
+    int pendingCount = Model?.Count(l => l.Status.ToString() == "Pending" || l.Status.ToString() == "ApprovedByDepartmentHead") ?? 0;
+    int approvedCount = Model?.Count(l => l.Status.ToString() == "Approved") ?? 0;
+    int rejectedCount = Model?.Count(l => l.Status.ToString().Contains("Rejected")) ?? 0;
+    int total = Model?.Count ?? 0;
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-file-alt" style="color:var(--primary);"></i> Leave Requests</h1>
+        <p>Review and manage all staff leave applications</p>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card gold">
+            <div class="accent-bar"></div>
+            <div class="stat-label">PENDING</div>
+            <div class="stat-value">@pendingCount</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card green">
+            <div class="accent-bar"></div>
+            <div class="stat-label">APPROVED</div>
+            <div class="stat-value">@approvedCount</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card pink">
+            <div class="accent-bar"></div>
+            <div class="stat-label">REJECTED</div>
+            <div class="stat-value">@rejectedCount</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card navy">
+            <div class="accent-bar"></div>
+            <div class="stat-label">TOTAL (FILTERED)</div>
+            <div class="stat-value">@total</div>
+        </div>
+    </div>
+</div>
+
+<div class="section-card">
+    <div class="card-body">
+        <form asp-action="AllLeaveRequests" method="get" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <select name="status" class="form-select" asp-items="Html.GetEnumSelectList<Take_Leave.Models.LeaveStatus>()">
+                    <option value="">All Status</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="leaveType" class="form-select" asp-items="Html.GetEnumSelectList<Take_Leave.Models.LeaveType>()">
+                    <option value="">All Leave Types</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="fromDate" class="form-control" placeholder="From" />
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="toDate" class="form-control" placeholder="To" />
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter me-1"></i> Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="section-card">
+    <div class="card-header">
+        <h2><i class="fas fa-list me-1"></i> All Leave Applications</h2>
+    </div>
+    <div class="card-body p-0">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Staff</th>
+                            <th>Leave Type</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Days</th>
+                            <th>Applied On</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 1;
+                        }
+                        @foreach (var r in Model)
+                        {
+                            string css = r.Status.ToString() switch
+                            {
+                                "Approved" => "status-approved",
+                                "Rejected" or "RejectedByDepartmentHead" => "status-rejected",
+                                "ApprovedByDepartmentHead" => "status-head-approved",
+                                _ => "status-pending"
+                            };
+                            <tr>
+                                <td>@i</td>
+                                <td>
+                                    <div class="fw-semibold" style="color:var(--primary);">@r.User?.FullName</div>
+                                    <div style="font-size:11px; color:var(--text-faint);">@r.User?.EmployeeId</div>
+                                </td>
+                                <td>@r.LeaveType</td>
+                                <td>@r.StartDate.ToString("MMM d, yyyy")</td>
+                                <td>@r.EndDate.ToString("MMM d, yyyy")</td>
+                                <td>@r.TotalDays</td>
+                                <td>@r.RequestDate.ToString("MMM d, yyyy")</td>
+                                <td><span class="status-badge @css">@r.Status</span></td>
+                                <td>
+                                    @if (r.Status.ToString() == "Pending" || r.Status.ToString() == "ApprovedByDepartmentHead")
+                                    {
+                                        <form asp-action="ApproveLeave" method="post" class="d-inline">
+                                            <input type="hidden" name="leaveId" value="@r.Id" />
+                                            <input type="hidden" name="comments" class="js-comments" />
+                                            <button type="submit" class="btn btn-success btn-sm btn-icon js-approve-btn">Approve</button>
+                                        </form>
+                                        <form asp-action="RejectLeave" method="post" class="d-inline">
+                                            <input type="hidden" name="leaveId" value="@r.Id" />
+                                            <input type="hidden" name="comments" class="js-comments" />
+                                            <button type="submit" class="btn btn-danger btn-sm btn-icon js-reject-btn">Reject</button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                No leave requests found for these filters.
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+            // Ask for an optional comment before Approve/Reject submits (controllers accept a 'comments' string)
+        document.querySelectorAll('.js-approve-btn, .js-reject-btn').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                var isReject = btn.classList.contains('js-reject-btn');
+                var comment = window.prompt(isReject ? 'Reason for rejection (optional):' : 'Comments (optional):', '');
+                    if (comment === null) { e.preventDefault(); return; }
+                btn.closest('form').querySelector('.js-comments').value = comment;
+            });
+        });
+    </script>
+}

@@ -1,0 +1,46 @@
+﻿@model Take_Leave.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_Layout";
+}
+
+<div class="d-flex justify-content-center" style="padding-top:2rem;">
+    <div class="section-card" style="max-width:420px; width:100%;">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <div style="width:56px; height:56px; border-radius:14px; background:#e8edf9; color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 12px;">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h1 style="font-size:19px; font-weight:800; color:var(--primary);">Welcome Back</h1>
+                <p style="font-size:12.5px; color:var(--text-muted);">Sign in to your Leave System account</p>
+            </div>
+
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+            <form asp-controller="Account" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Email</label>
+                    <input asp-for="Email" class="form-control" required autofocus />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Password</label>
+                    <input asp-for="Password" type="password" class="form-control" required />
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="form-check">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label asp-for="RememberMe" class="form-check-label" style="font-size:12.5px;">Remember me</label>
+                    </div>
+                    <a asp-action="ForgotPassword" style="font-size:12.5px; color:var(--accent);">Forgot password?</a>
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-sign-in-alt me-1"></i> Login</button>
+            </form>
+
+            <div class="text-center mt-3" style="font-size:12.5px; color:var(--text-muted);">
+                Don't have an account? <a asp-action="Register" style="color:var(--primary); font-weight:600;">Register as Staff</a>
+            </div>
+        </div>
+    </div>
+</div>

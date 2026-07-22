@@ -1,0 +1,990 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Texas College Leave System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+            :root {
+                --primary: #1a3a6e;
+                --primary-dark: #122a54;
+                --primary-light: #234a88;
+                --accent: #e8197d;
+                --accent-dark: #c0145f;
+                --accent-soft: rgba(232,25,125,0.12);
+                --bg-page: #f0f4ff;
+                --bg-card: #ffffff;
+                --border: #e2e8f0;
+                --text-main: #0f172a;
+                --text-muted: #64748b;
+                --text-faint: #94a3b8;
+            }
+
+            *, *::before, *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            html, body {
+                width: 100%;
+                min-height: 100%;
+                overflow-x: hidden;
+                background: var(--bg-page);
+                font-family: 'Segoe UI', system-ui, sans-serif;
+            }
+
+            /* Top Navbar */
+            .top-header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 60px;
+                background: #fff;
+                border-bottom: 1px solid rgba(43,57,125,.12);
+                box-shadow: 0 2px 10px rgba(43,57,125,.09);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            }
+
+            .navbar-logo {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 240px;
+                height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-decoration: none;
+                background: #fff;
+                border-right: 1px solid rgba(43,57,125,.10);
+            }
+
+            .header-logo {
+                width: auto;
+                height: 52px;
+                max-width: 175px;
+                object-fit: contain;
+                display: block;
+            }
+
+            .college-title {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                width: min(920px, calc(100% - 310px));
+                text-align: center;
+                font-size: 21px;
+                font-weight: 950;
+                color: #2B397D;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                letter-spacing: .2px;
+            }
+
+            .navbar-right {
+                position: absolute;
+                right: 1.25rem;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            .menu-toggle {
+                position: absolute;
+                left: 250px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 38px;
+                height: 38px;
+                border-radius: 11px;
+                background: rgba(124,58,237,.08);
+                border: 1px solid rgba(124,58,237,.18);
+                color: #7c3aed;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                font-size: 17px;
+                cursor: pointer;
+                transition: background .18s;
+                flex-shrink: 0;
+            }
+
+                .menu-toggle:hover {
+                    background: rgba(124,58,237,.18);
+                }
+
+            /* Sidebar */
+            .sidebar {
+                width: 240px;
+                height: 100vh;
+                position: fixed;
+                top: 0;
+                left: 0;
+                background: linear-gradient(135deg, #0B1F66, #081547);
+                border-right: 1px solid rgba(43,57,125,.30);
+                z-index: 9998;
+                overflow-y: auto;
+                overflow-x: hidden;
+                display: flex;
+                flex-direction: column;
+                transition: left .22s ease, width .22s ease;
+            }
+
+                .sidebar::-webkit-scrollbar {
+                    width: 4px;
+                }
+
+                .sidebar::-webkit-scrollbar-thumb {
+                    background: rgba(124,58,237,.35);
+                    border-radius: 20px;
+                }
+
+                .sidebar::after {
+                    content: '';
+                    position: absolute;
+                    left: 50%;
+                    bottom: 78px;
+                    width: 250px;
+                    height: 250px;
+                    transform: translateX(-50%);
+                    background: url('/image/sidelogo.png') no-repeat center / contain;
+                    opacity: .26;
+                    pointer-events: none;
+                    z-index: 0;
+                }
+
+            .sidebar-nav {
+                position: relative;
+                z-index: 2;
+                padding: 72px 10px 24px;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+
+            .menu-label {
+                display: block;
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: 1.2px;
+                color: rgba(255,255,255,.38);
+                padding: 14px 10px 5px;
+            }
+
+            .sidebar-divider {
+                border: none;
+                border-top: 1px solid rgba(255,255,255,.08);
+                margin: 8px 6px;
+            }
+
+            .sidebar .nav-link {
+                color: rgba(255,255,255,1);
+                font-size: 13px;
+                font-weight: 500;
+                padding: 9px 12px;
+                margin-bottom: 2px;
+                border-radius: 9px;
+                transition: background .18s, color .18s;
+                display: flex;
+                align-items: center;
+                gap: 9px;
+                text-decoration: none;
+                position: relative;
+                white-space: nowrap;
+            }
+
+                .sidebar .nav-link:hover {
+                    background: rgba(124,58,237,.18);
+                    color: #fff;
+                }
+
+                .sidebar .nav-link.active {
+                    background: rgba(30,58,138,.55);
+                    color: #fff;
+                    font-weight: 700;
+                    box-shadow: 0 3px 12px rgba(124,58,237,.22);
+                }
+
+                    .sidebar .nav-link.active::before {
+                        content: '';
+                        position: absolute;
+                        left: 0;
+                        top: 25%;
+                        bottom: 25%;
+                        width: 3px;
+                        border-radius: 2px;
+                        background: #7c3aed;
+                    }
+
+            .nav-icon {
+                width: 18px;
+                font-size: 14px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            /* Sidebar footer / logout */
+            .sidebar-footer {
+                position: relative;
+                z-index: 2;
+                padding: 10px;
+                border-top: 1px solid rgba(255,255,255,.08);
+                background: rgba(0,0,0,.12);
+            }
+
+            .sidebar-logout-btn {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                gap: 9px;
+                padding: 10px 12px;
+                border-radius: 9px;
+                border: 1px solid rgba(232,25,125,.35);
+                background: rgba(232,25,125,.12);
+                color: #fff;
+                font-size: 13px;
+                font-weight: 600;
+                text-decoration: none;
+                transition: background .18s, border-color .18s;
+                cursor: pointer;
+            }
+
+                .sidebar-logout-btn:hover {
+                    background: var(--accent);
+                    border-color: var(--accent);
+                    color: #fff;
+                }
+
+                .sidebar-logout-btn .nav-icon {
+                    color: inherit;
+                }
+
+            /* Sidebar overlay mobile */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                z-index: 9990;
+                background: rgba(0,0,0,.42);
+            }
+
+                .sidebar-overlay.active {
+                    display: block;
+                }
+
+            /* Content area */
+            .content-area {
+                margin-left: 240px;
+                padding-top: 60px;
+                min-height: 100vh;
+                width: calc(100% - 240px);
+                background: var(--bg-page);
+                transition: margin-left .22s ease, width .22s ease;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .content-wrapper {
+                flex: 1;
+                padding: 2rem 1.75rem 3.5rem;
+                overflow-x: hidden;
+            }
+
+            /* Stat cards */
+            .stat-card {
+                background: var(--bg-card);
+                border-radius: 14px;
+                padding: 1.25rem 1.4rem;
+                border: 0.5px solid var(--border);
+                position: relative;
+                overflow: hidden;
+                transition: transform .2s, box-shadow .2s;
+            }
+
+                .stat-card:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 8px 24px rgba(26,58,110,.10);
+                }
+
+                .stat-card .accent-bar {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 3px;
+                    border-radius: 14px 14px 0 0;
+                }
+
+                .stat-card.pink .accent-bar { background: #e8197d; }
+                .stat-card.gold .accent-bar { background: #d4a017; }
+                .stat-card.purple .accent-bar { background: #7c3aed; }
+                .stat-card.navy .accent-bar { background: var(--primary); }
+                .stat-card.green .accent-bar { background: #16a34a; }
+
+                .stat-card .icon-wrap {
+                    width: 42px;
+                    height: 42px;
+                    border-radius: 10px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-bottom: 14px;
+                    font-size: 18px;
+                }
+
+                .stat-card.pink .icon-wrap { background: #fce7f3; color: #e8197d; }
+                .stat-card.gold .icon-wrap { background: #fef9ee; color: #b47c0a; }
+                .stat-card.purple .icon-wrap { background: #ede9fe; color: #7c3aed; }
+                .stat-card.navy .icon-wrap { background: #e8edf9; color: var(--primary); }
+                .stat-card.green .icon-wrap { background: #dcfce7; color: #16a34a; }
+
+                .stat-card .stat-label {
+                    font-size: 12px;
+                    color: var(--text-faint);
+                    font-weight: 500;
+                    margin-bottom: 4px;
+                }
+
+                .stat-card .stat-sub {
+                    font-size: 11px;
+                    color: var(--text-faint);
+                    margin-top: 4px;
+                }
+
+                .stat-card .stat-value {
+                    font-size: 30px;
+                    font-weight: 800;
+                    color: var(--primary);
+                    line-height: 1;
+                }
+
+            /* Section cards */
+            .section-card {
+                background: var(--bg-card);
+                border-radius: 14px;
+                border: 0.5px solid var(--border);
+                overflow: hidden;
+                margin-bottom: 1.5rem;
+            }
+
+                .section-card .card-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 1rem 1.5rem;
+                    border-bottom: 1px solid #f1f5f9;
+                    background: #f8f9fd;
+                    border-left: 4px solid var(--accent);
+                }
+
+                    .section-card .card-header h2 {
+                        font-size: 15px;
+                        font-weight: 700;
+                        color: var(--primary);
+                        margin: 0;
+                    }
+
+                .section-card .card-body {
+                    padding: 1.25rem 1.5rem;
+                }
+
+            /* Page header */
+            .page-header {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: .75rem;
+                margin-bottom: 1.5rem;
+            }
+
+                .page-header h1 {
+                    font-size: 21px;
+                    font-weight: 800;
+                    color: var(--primary);
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+
+                .page-header p {
+                    font-size: 13px;
+                    color: var(--text-muted);
+                    margin-top: 2px;
+                }
+
+            /* Status badges */
+            .status-badge {
+                font-size: 11.5px;
+                font-weight: 600;
+                padding: 4px 12px;
+                border-radius: 20px;
+                display: inline-block;
+            }
+
+            .status-pending { background: #fffbeb; color: #b45309; border: 0.5px solid #fde68a; }
+            .status-approved { background: #f0fdf4; color: #166534; border: 0.5px solid #bbf7d0; }
+            .status-rejected { background: #fef2f2; color: #991b1b; border: 0.5px solid #fecaca; }
+            .status-head-approved { background: #ecfeff; color: #155e75; border: 0.5px solid #a5f3fc; }
+
+            .priority-high { background: #ffe4ef; color: #c0145f; }
+            .priority-medium { background: #fef3c7; color: #92400e; }
+            .priority-low { background: #f1f5f9; color: #64748b; }
+
+            .tag-pill {
+                background: var(--primary);
+                color: #fff;
+                font-size: 11px;
+                font-weight: 700;
+                padding: 4px 10px;
+                border-radius: 6px;
+                display: inline-block;
+            }
+
+            /* Tables */
+            .table thead th {
+                background: #f8fafc;
+                font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: .5px;
+                color: var(--text-muted);
+                border-bottom: 1px solid var(--border);
+                padding: .85rem 1rem;
+            }
+
+            .table tbody td {
+                font-size: 14px;
+                color: var(--text-main);
+                padding: .85rem 1rem;
+                vertical-align: middle;
+                border-bottom: 0.5px solid #f1f5f9;
+            }
+
+            .table tbody tr:last-child td { border-bottom: none; }
+            .table tbody tr:hover { background: #f8fafc; }
+
+            /* Buttons */
+            .btn-primary {
+                background-color: var(--primary) !important;
+                border-color: var(--primary-dark) !important;
+                color: #fff !important;
+            }
+
+                .btn-primary:hover {
+                    background-color: var(--primary-light) !important;
+                    border-color: var(--primary) !important;
+                }
+
+            .btn-accent {
+                background-color: var(--accent) !important;
+                border-color: var(--accent-dark) !important;
+                color: #fff !important;
+            }
+
+                .btn-accent:hover {
+                    background-color: var(--accent-dark) !important;
+                }
+
+            .btn-icon {
+                padding: 5px 10px;
+                border-radius: 6px;
+                font-size: 13px;
+                margin: 0 2px;
+            }
+
+            /* Progress bars for leave balance */
+            .balance-progress {
+                height: 6px;
+                border-radius: 4px;
+                background: #f1f5f9;
+                overflow: hidden;
+                margin-top: 10px;
+            }
+
+                .balance-progress .fill { height: 100%; border-radius: 4px; }
+
+            /* Empty state */
+            .empty-state {
+                text-align: center;
+                padding: 2.5rem 1rem;
+                color: var(--text-faint);
+                font-size: 14px;
+            }
+
+                .empty-state i {
+                    font-size: 38px;
+                    display: block;
+                    margin-bottom: 10px;
+                    color: #cbd5e1;
+                }
+
+            /* Footer */
+            .footer {
+                background-color: var(--primary);
+                text-align: center;
+                padding: .9rem 1rem;
+                font-size: 12px;
+                color: rgba(200,215,255,.6);
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 900;
+            }
+
+                .footer.with-sidebar {
+                    left: 240px;
+                }
+
+                @@media (min-width: 1280px) {
+                    .footer.with-sidebar { left: 260px; }
+                }
+
+                @@media (min-width: 992px) and (max-width: 1279px) {
+                    .footer.with-sidebar { left: 220px; }
+                }
+
+                @@media (max-width: 991px) {
+                    .footer.with-sidebar { left: 0; }
+                }
+
+                .footer span { color: var(--accent); font-weight: 600; }
+
+            /* Profile dropdown */
+            .no-caret::after { display: none !important; }
+
+            .profile-trigger-icon {
+                font-size: 1.5rem;
+                color: #2B397D;
+                transition: color .2s,transform .2s;
+                cursor: pointer;
+            }
+
+                .profile-trigger-icon:hover { color: #0B1F66; transform: scale(1.05); }
+
+            .profile-dropdown-card {
+                min-width: 280px;
+                padding: 0;
+                border-radius: 12px !important;
+                margin-top: 12px !important;
+                background: white;
+                overflow: hidden;
+            }
+
+            .profile-card-header {
+                background: #f8fafc;
+                padding: 1.15rem 1.25rem;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .user-avatar-circle {
+                width: 38px;
+                height: 38px;
+                border-radius: 50%;
+                background: #e8edf9;
+                color: var(--primary);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 15px;
+                flex-shrink: 0;
+                border: 1px solid #cbd5e1;
+            }
+
+            .user-meta-details { display: flex; flex-direction: column; }
+
+            .user-display-name {
+                font-size: 13.5px;
+                font-weight: 700;
+                color: #0f172a;
+                line-height: 1.2;
+                margin-bottom: 2px;
+            }
+
+            .user-system-role {
+                font-size: 10.5px;
+                font-weight: 700;
+                color: var(--accent);
+                text-transform: uppercase;
+                letter-spacing: .5px;
+            }
+
+            .profile-routing-link .dropdown-item {
+                padding: 10px 16px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                white-space: normal;
+                transition: background .15s,color .15s;
+                color: #334155 !important;
+            }
+
+                .profile-routing-link .dropdown-item:hover {
+                    background: #f1f5f9;
+                    color: var(--primary) !important;
+                }
+
+            .link-icon {
+                font-size: 13px;
+                color: #64748b;
+                width: 16px;
+                text-align: center;
+                flex-shrink: 0;
+            }
+
+            .profile-routing-link .dropdown-item:hover .link-icon { color: var(--primary); }
+
+            .link-title { display: block; font-size: 13px; font-weight: 600; color: #334155; }
+            .link-subtitle { display: block; font-size: 11px; color: #94a3b8; }
+
+            /* Responsive */
+            @@media (min-width: 1280px) {
+                .sidebar { width: 260px; }
+                .navbar-logo { width: 260px; }
+                .header-logo { height: 54px; max-width: 190px; }
+                .menu-toggle { left: 270px; }
+                .content-area { margin-left: 260px; width: calc(100% - 260px); }
+                .college-title { font-size: 22px; width: min(960px, calc(100% - 340px)); }
+                .sidebar::after { width: 270px; height: 270px; }
+            }
+
+            @@media (min-width: 992px) and (max-width: 1279px) {
+                .sidebar { width: 220px; }
+                .navbar-logo { width: 220px; }
+                .header-logo { height: 48px; max-width: 160px; }
+                .menu-toggle { left: 230px; }
+                .content-area { margin-left: 220px; width: calc(100% - 220px); }
+                .sidebar .nav-link { font-size: 12.5px; padding: 8px 10px; }
+                .college-title { font-size: 19px; width: min(800px, calc(100% - 300px)); }
+                .sidebar::after { width: 230px; height: 230px; }
+            }
+
+            @@media (max-width: 991px) {
+                .navbar-logo { left: 8px; width: 52px; height: 60px; border-right: none; }
+                .header-logo { height: 42px; max-width: 46px; }
+                .menu-toggle { left: 66px; display: flex; }
+                .college-title { font-size: 15px; width: min(650px, calc(100% - 180px)); }
+                .sidebar { left: -260px; width: 240px; }
+                .sidebar.active { left: 0; }
+                .content-area { margin-left: 0; width: 100%; }
+            }
+
+            @@media (max-width: 575px) {
+                .top-header { height: 54px; }
+                .navbar-logo { left: 7px; width: 44px; height: 54px; }
+                .header-logo { height: 36px; max-width: 40px; }
+                .menu-toggle { left: 54px; width: 36px; height: 36px; font-size: 15px; }
+                .college-title { font-size: 13px; width: calc(100% - 160px); }
+                .content-area { padding-top: 54px; }
+                .sidebar { width: 82%; max-width: 280px; left: -100%; }
+                .sidebar::after { width: 220px; height: 220px; bottom: 76px; }
+                .content-wrapper { padding: 1.25rem 1rem; }
+            }
+    </style>
+</head>
+
+<body>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar -->
+        <div id="sidebarMenu" class="sidebar">
+            <div class="sidebar-nav">
+                @if (User.IsInRole("Admin"))
+                {
+                    <span class="menu-label">Main</span>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")"
+                       asp-controller="Admin" asp-action="Dashboard">
+                        <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Dashboard
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "StaffList" ? "active" : "")"
+                       asp-controller="Admin" asp-action="StaffList">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span> Staff Management
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "AllLeaveRequests" ? "active" : "")"
+                       asp-controller="Admin" asp-action="AllLeaveRequests">
+                        <span class="nav-icon"><i class="fas fa-file-alt"></i></span> Leave Requests
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Departments" ? "active" : "")"
+                       asp-controller="Admin" asp-action="Departments">
+                        <span class="nav-icon"><i class="fas fa-building"></i></span> Departments
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notice" ? "active" : "")"
+                       asp-controller="Notice" asp-action="Index">
+                        <span class="nav-icon"><i class="fas fa-bell"></i></span> Notice Board
+                    </a>
+                    <hr class="sidebar-divider" />
+                    <span class="menu-label">System</span>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "NotificationLogs" ? "active" : "")"
+                       asp-controller="Admin" asp-action="NotificationLogs">
+                        <span class="nav-icon"><i class="fas fa-history"></i></span> Notification Logs
+                    </a>
+                    <hr class="sidebar-divider" />
+                    <span class="menu-label">Account</span>
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
+                       asp-controller="Account" asp-action="Profile">
+                        <span class="nav-icon"><i class="fas fa-user"></i></span> My Profile
+                    </a>
+                }
+                else if (User.IsInRole("DepartmentHead"))
+                {
+                    <span class="menu-label">Main</span>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")"
+                       asp-controller="DepartmentHead" asp-action="Dashboard">
+                        <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Dashboard
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "PendingLeaves" ? "active" : "")"
+                       asp-controller="DepartmentHead" asp-action="PendingLeaves">
+                        <span class="nav-icon"><i class="fas fa-clock"></i></span> Pending Approvals
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "TeamLeaves" ? "active" : "")"
+                       asp-controller="DepartmentHead" asp-action="TeamLeaves">
+                        <span class="nav-icon"><i class="fas fa-users"></i></span> Team Leaves
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "StaffList" ? "active" : "")"
+                       asp-controller="DepartmentHead" asp-action="StaffList">
+                        <span class="nav-icon"><i class="fas fa-user-friends"></i></span> My Staff
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notice" ? "active" : "")"
+                       asp-controller="Notice" asp-action="Index">
+                        <span class="nav-icon"><i class="fas fa-bell"></i></span> Notice Board
+                    </a>
+                    <hr class="sidebar-divider" />
+                    <span class="menu-label">Account</span>
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
+                       asp-controller="Account" asp-action="Profile">
+                        <span class="nav-icon"><i class="fas fa-user"></i></span> My Profile
+                    </a>
+                }
+                else if (User.IsInRole("Staff"))
+                {
+                    <span class="menu-label">Main</span>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")"
+                       asp-controller="Staff" asp-action="Dashboard">
+                        <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span> Dashboard
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ApplyLeave" ? "active" : "")"
+                       asp-controller="Staff" asp-action="ApplyLeave">
+                        <span class="nav-icon"><i class="fas fa-plus-circle"></i></span> Apply Leave
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "LeaveHistory" ? "active" : "")"
+                       asp-controller="Staff" asp-action="LeaveHistory">
+                        <span class="nav-icon"><i class="fas fa-history"></i></span> Leave History
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "LeaveBalance" ? "active" : "")"
+                       asp-controller="Staff" asp-action="LeaveBalance">
+                        <span class="nav-icon"><i class="fas fa-balance-scale"></i></span> Leave Balance
+                    </a>
+                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notice" ? "active" : "")"
+                       asp-controller="Notice" asp-action="Index">
+                        <span class="nav-icon"><i class="fas fa-bell"></i></span> Notice Board
+                    </a>
+                    <hr class="sidebar-divider" />
+                    <span class="menu-label">Account</span>
+                    <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
+                       asp-controller="Staff" asp-action="Profile">
+                        <span class="nav-icon"><i class="fas fa-user"></i></span> My Profile
+                    </a>
+                }
+            </div>
+
+            <div class="sidebar-footer">
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="sidebar-logout-btn">
+                        <span class="nav-icon"><i class="fas fa-power-off"></i></span> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+
+    <!-- Top Navbar -->
+    <div class="top-header">
+        <a asp-controller="Home" asp-action="Index" class="navbar-logo" title="Go to Dashboard">
+            <img src="~/image/logo.png" alt="Texas College of Management &amp; IT" class="header-logo" />
+        </a>
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <button id="menuToggle" class="menu-toggle" type="button" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
+        }
+
+        <span class="college-title">Texas College of Management and IT (TCMIT)</span>
+
+        <!-- Profile dropdown (no logout here anymore — moved to sidebar) -->
+        <div class="navbar-right">
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle no-caret"
+                   id="accountMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="profile-trigger-icon">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 profile-dropdown-card"
+                    aria-labelledby="accountMenuDropdown">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="profile-card-header">
+                            <div class="user-avatar-circle"><i class="fas fa-user"></i></div>
+                            <div class="user-meta-details">
+                                <span class="user-display-name">@User.Identity.Name</span>
+                                <span class="user-system-role">
+                                    @(User.IsInRole("Admin") ? "System Admin" :
+                                      User.IsInRole("DepartmentHead") ? "Department Head" : "Staff Member")
+                                </span>
+                            </div>
+                        </li>
+                        <li class="profile-routing-link">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a class="dropdown-item py-3" asp-controller="Admin" asp-action="Dashboard">
+                                    <i class="fas fa-chart-line link-icon"></i>
+                                    <div>
+                                        <span class="link-title">Admin Terminal</span>
+                                        <span class="link-subtitle">Manage college metrics</span>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item py-3" asp-controller="Account" asp-action="Profile">
+                                    <i class="fas fa-id-card link-icon"></i>
+                                    <div>
+                                        <span class="link-title">My Profile</span>
+                                        <span class="link-subtitle">View account particulars</span>
+                                    </div>
+                                </a>
+                            }
+                            else if (User.IsInRole("DepartmentHead"))
+                            {
+                                <a class="dropdown-item py-3" asp-controller="DepartmentHead" asp-action="Dashboard">
+                                    <i class="fas fa-shield-alt link-icon"></i>
+                                    <div>
+                                        <span class="link-title">Head Dashboard</span>
+                                        <span class="link-subtitle">Review pending approvals</span>
+                                    </div>
+                                </a>
+                                <a class="dropdown-item py-3" asp-controller="Account" asp-action="Profile">
+                                    <i class="fas fa-id-card link-icon"></i>
+                                    <div>
+                                        <span class="link-title">My Profile</span>
+                                        <span class="link-subtitle">View account particulars</span>
+                                    </div>
+                                </a>
+                            }
+                            else if (User.IsInRole("Staff"))
+                            {
+                                <a class="dropdown-item py-3" asp-controller="Staff" asp-action="Profile">
+                                    <i class="fas fa-id-card link-icon"></i>
+                                    <div>
+                                        <span class="link-title">My Profile</span>
+                                        <span class="link-subtitle">View profile particulars</span>
+                                    </div>
+                                </a>
+                            }
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="profile-card-header">
+                            <div class="user-avatar-circle"><i class="fas fa-user-slash"></i></div>
+                            <div class="user-meta-details">
+                                <span class="user-display-name">Guest User</span>
+                                <span class="user-system-role">Anonymous Session</span>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider m-0"></li>
+                        <li class="profile-routing-link">
+                            <a class="dropdown-item py-3" asp-controller="Account" asp-action="Login">
+                                <i class="fas fa-sign-in-alt link-icon"></i>
+                                <div>
+                                    <span class="link-title">Login to System</span>
+                                    <span class="link-subtitle">Provide your credentials</span>
+                                </div>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- End Top Navbar -->
+    <!-- Main Content -->
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="content-area" id="contentArea">
+            <div class="content-wrapper">
+                <main role="main">
+                    @RenderBody()
+                </main>
+            </div>
+            <footer class="footer with-sidebar">
+                &copy; @DateTime.Now.Year &mdash; <span>Texas College</span> Leave Management System. All rights reserved.
+            </footer>
+        </div>
+    }
+    else
+    {
+        <div style="padding-top:60px; min-height:100vh; background:var(--bg-page); display:flex; flex-direction:column;">
+            <div style="flex:1; padding:2rem 1.75rem 3.5rem;">
+                <main role="main">
+                    @RenderBody()
+                </main>
+            </div>
+            <footer class="footer">
+                &copy; @DateTime.Now.Year &mdash; <span>Texas College</span> Leave Management System. All rights reserved.
+            </footer>
+        </div>
+    }
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+            (function() {
+                var toggleBtn = document.getElementById("menuToggle");
+                var sidebar = document.getElementById("sidebarMenu");
+                var overlay = document.getElementById("sidebarOverlay");
+
+                function closeSidebar() {
+                    if (!sidebar || !overlay) return;
+                    sidebar.classList.remove("active");
+                    overlay.classList.remove("active");
+                }
+
+                if (toggleBtn && sidebar && overlay) {
+                    toggleBtn.addEventListener("click", function() {
+                        sidebar.classList.toggle("active");
+                        overlay.classList.toggle("active");
+                    });
+                    overlay.addEventListener("click", closeSidebar);
+                    window.addEventListener("resize", function() {
+                        if (window.innerWidth >= 992) closeSidebar();
+                    });
+                }
+            })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

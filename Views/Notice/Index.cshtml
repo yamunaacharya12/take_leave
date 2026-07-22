@@ -1,0 +1,236 @@
+﻿@model IEnumerable<Take_Leave.Models.Notice>
+@{
+    ViewData["Title"] = "Department Notice Board";
+    bool isAdmin = User.IsInRole("Admin");
+}
+
+<div class="main-container" style="padding: 20px;">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-bell"></i> Department Notice Board</h2>
+            <p class="text-muted">Official announcements and notices from all departments</p>
+        </div>
+        @if (isAdmin)
+        {
+            <a asp-action="Create" class="btn btn-primary"><i class="fas fa-plus"></i> Post Notice</a>
+        }
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <!-- Filters -->
+    <div class="card p-3 mb-4 shadow-sm">
+        <div class="row g-2">
+            <div class="col-md-8"><input type="text" id="noticeSearch" class="form-control" placeholder="Search notices..."></div>
+            <div class="col-md-2">
+                <select id="noticeDeptFilter" class="form-select">
+                    <option value="">All Departments</option>
+                    @foreach (var dept in Model.SelectMany(n => n.Departments).Select(d => d.Name).Distinct().OrderBy(d => d))
+                    {
+                        <option value="@dept">@dept</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2"><button id="noticeClearFilters" class="btn btn-outline-secondary w-100">Clear Filters</button></div>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>NOTICE SUBJECT</th>
+                        <th>POST TO</th>
+                        <th>SENT BY</th>
+                        <th>DATE</th>
+                        <th>ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody id="noticeTableBody">
+                    @foreach (var item in Model.Select((n, i) => new { n, index = i + 1 }))
+                    {
+                        var deptNames = item.n.Departments.Select(d => d.Name).ToList();
+                        var deptSearchTokens = string.Join(" ", deptNames).ToLower();
+                        <tr data-departments="@string.Join("|", deptNames)" data-search="@($"{item.n.Subject} {item.n.Content} {deptSearchTokens}".ToLower())">
+                            <td>@item.index</td>
+                            <td class="fw-bold text-primary notice-subject-link"
+                                style="cursor:pointer;"
+                                data-subject="@item.n.Subject"
+                                data-content="@item.n.Content"
+                                data-department="@(deptNames.Any() ? string.Join(", ", deptNames) : "All Departments")"
+                                data-sentby="@item.n.SentBy"
+                                data-date="@item.n.SentDate.ToString("MMM dd, yyyy h:mm tt")">
+                                @item.n.Subject
+                            </td>
+                            <td>
+                                @if (deptNames.Any())
+                                {
+                                    foreach (var name in deptNames)
+                                    {
+                                        <span class="badge bg-primary me-1 mb-1">@name</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">All Departments</span>
+                                }
+                            </td>
+                            <td>@item.n.SentBy</td>
+                            <td>@item.n.SentDate.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary notice-view-btn"
+                                        data-subject="@item.n.Subject"
+                                        data-content="@item.n.Content"
+                                        data-department="@(deptNames.Any() ? string.Join(", ", deptNames) : "All Departments")"
+                                        data-sentby="@item.n.SentBy"
+                                        data-date="@item.n.SentDate.ToString("MMM dd, yyyy h:mm tt")">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                @if (isAdmin)
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.n.Id" class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger notice-delete-btn"
+                                            data-id="@item.n.Id"
+                                            data-subject="@item.n.Subject">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            @if (!Model.Any())
+            {
+                <div class="text-center text-muted p-4">No notices posted yet.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Notice Details Modal -->
+<div class="modal fade" id="noticeDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="noticeModalSubject"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3" style="font-size:12.5px; color:#6b7280;">
+                    <span id="noticeModalDepartment"></span> &middot;
+                    Sent by <span id="noticeModalSentBy"></span> &middot;
+                    <span id="noticeModalDate"></span>
+                </div>
+                <div id="noticeModalContent" style="white-space:pre-wrap; font-size:14px; line-height:1.6;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (isAdmin)
+{
+    <!-- Delete Confirmation Modal (Admin only) -->
+    <div class="modal fade" id="noticeDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div style="width:56px; height:56px; border-radius:14px; background:#fef2f2; color:#dc2626; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 14px;">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                    <h5 class="mb-2">Delete this notice?</h5>
+                    <p style="font-size:13.5px; color:var(--text-muted);" class="mb-1">
+                        "<span id="deleteModalSubject" class="fw-bold"></span>" will be permanently removed.
+                    </p>
+                    <p style="font-size:12.5px; color:var(--text-faint);" class="mb-4">This action cannot be undone.</p>
+
+                    <form id="deleteNoticeForm" asp-action="Delete" method="post" class="d-flex gap-2 justify-content-center">
+                        <input type="hidden" id="deleteNoticeId" name="id" value="" />
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger"><i class="fas fa-trash me-1"></i> Delete Notice</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function() {
+            var searchInput = document.getElementById('noticeSearch');
+            var deptFilter = document.getElementById('noticeDeptFilter');
+            var clearBtn = document.getElementById('noticeClearFilters');
+            var rows = Array.from(document.querySelectorAll('#noticeTableBody tr'));
+
+            function applyFilters() {
+                var term = searchInput.value.trim().toLowerCase();
+                var dept = deptFilter.value;
+
+                rows.forEach(function(row) {
+                    var matchesSearch = !term || row.dataset.search.includes(term);
+                    var rowDepts = (row.dataset.departments || '').split('|');
+                    var matchesDept = !dept || rowDepts.includes(dept);
+                    row.style.display = (matchesSearch && matchesDept) ? '' : 'none';
+                });
+            }
+
+            searchInput.addEventListener('input', applyFilters);
+            deptFilter.addEventListener('change', applyFilters);
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                deptFilter.value = '';
+                applyFilters();
+            });
+
+            // Notice details modal — populated from data-* attributes, no extra request needed
+            function openNoticeModal(el) {
+                document.getElementById('noticeModalSubject').textContent = el.dataset.subject || '';
+                document.getElementById('noticeModalDepartment').textContent = el.dataset.department || '';
+                document.getElementById('noticeModalSentBy').textContent = el.dataset.sentby || '';
+                document.getElementById('noticeModalDate').textContent = el.dataset.date || '';
+                document.getElementById('noticeModalContent').textContent = el.dataset.content || '';
+
+                var modalEl = document.getElementById('noticeDetailsModal');
+                var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+
+            document.querySelectorAll('.notice-view-btn, .notice-subject-link').forEach(function(el) {
+                el.addEventListener('click', function() { openNoticeModal(el); });
+            });
+
+            // Styled delete confirmation modal (Admin only — element won't exist for other roles)
+            var deleteModalEl = document.getElementById('noticeDeleteModal');
+            if (deleteModalEl) {
+                document.querySelectorAll('.notice-delete-btn').forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        document.getElementById('deleteNoticeId').value = btn.dataset.id;
+                        document.getElementById('deleteModalSubject').textContent = btn.dataset.subject || '';
+
+                        var modal = bootstrap.Modal.getOrCreateInstance(deleteModalEl);
+                        modal.show();
+                    });
+                });
+            }
+        })();
+    </script>
+}

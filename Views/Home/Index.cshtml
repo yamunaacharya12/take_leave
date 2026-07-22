@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Welcome";
+}
+
+<div style="border-radius:18px; overflow:hidden; background:linear-gradient(135deg,#0B1F66,#081547); position:relative; padding:3.5rem 2rem; text-align:center; color:#fff;">
+    <div style="position:absolute; top:-40px; right:-40px; width:220px; height:220px; border-radius:50%; background:rgba(255,255,255,.04);"></div>
+    <div style="position:absolute; bottom:-60px; right:60px; width:260px; height:260px; border-radius:50%; background:rgba(124,58,237,.10);"></div>
+
+    <span class="badge rounded-pill mb-3" style="background:var(--accent); font-size:11px; font-weight:700; letter-spacing:.5px; padding:6px 16px;">
+        LEAVE MANAGEMENT PORTAL
+    </span>
+
+    <h1 style="font-size:38px; font-weight:800; margin-bottom:.5rem;">
+        Texas College of<br />
+        <span style="color:#f5b301;">Management &amp; IT</span>
+    </h1>
+
+    <p style="max-width:640px; margin:0 auto 1.75rem; color:rgba(255,255,255,.75); font-size:14.5px;">
+        Apply for leave, track approvals, and stay on top of department notices —
+        all from one dashboard.
+    </p>
+
+    <div class="d-flex justify-content-center gap-3 position-relative" style="z-index:2;">
+        <a asp-controller="Account" asp-action="Login" class="btn btn-light fw-semibold px-4">Login</a>
+        <a asp-controller="Account" asp-action="Register" class="btn fw-semibold px-4" style="background:transparent; border:1px solid rgba(255,255,255,.5); color:#fff;">Create Staff Account</a>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card navy h-100">
+            <div class="accent-bar"></div>
+            <div class="icon-wrap"><i class="fas fa-plus-circle"></i></div>
+            <div class="stat-label" style="color:var(--primary); font-weight:700; font-size:14px;">Apply for Leave</div>
+            <div style="font-size:12px; color:var(--text-faint);">Submit requests in seconds</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card gold h-100">
+            <div class="accent-bar"></div>
+            <div class="icon-wrap"><i class="fas fa-balance-scale"></i></div>
+            <div class="stat-label" style="color:var(--primary); font-weight:700; font-size:14px;">Track Balances</div>
+            <div style="font-size:12px; color:var(--text-faint);">Annual, sick &amp; emergency leave</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card pink h-100">
+            <div class="accent-bar"></div>
+            <div class="icon-wrap"><i class="fas fa-file-alt"></i></div>
+            <div class="stat-label" style="color:var(--primary); font-weight:700; font-size:14px;">Fast Approvals</div>
+            <div style="font-size:12px; color:var(--text-faint);">Department head &amp; admin review</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card purple h-100">
+            <div class="accent-bar"></div>
+            <div class="icon-wrap"><i class="fas fa-bell"></i></div>
+            <div class="stat-label" style="color:var(--primary); font-weight:700; font-size:14px;">Notice Board</div>
+            <div style="font-size:12px; color:var(--text-faint);">Stay updated college-wide</div>
+        </div>
+    </div>
+</div>

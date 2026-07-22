@@ -1,0 +1,20 @@
+﻿using System.Threading.Tasks;
+using Take_Leave.Models;
+
+namespace Take_Leave.Services
+{
+    public interface INotificationService
+    {
+        // New utility method required for direct admin panel triggers
+        //Task SendWhatsAppAsync(string mobileNumber, string message);
+
+        // Your existing business workflow methods
+        Task NotifyLeaveApplicationAsync(LeaveRequest leaveRequest);
+        Task NotifyDepartmentHeadAsync(LeaveRequest leaveRequest);
+        Task NotifyAdminAsync(LeaveRequest leaveRequest);
+        Task NotifyStatusChangeAsync(LeaveRequest leaveRequest);
+        Task NotifyLeaveBalanceAlertAsync(ApplicationUser user, LeaveType leaveType);
+        Task SendDailyDigestAsync();
+        Task SendWeeklyReportAsync();
+    }
+}

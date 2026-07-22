@@ -1,0 +1,45 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Take_Leave.Models
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav flex-row align-items-center gap-3 list-unstyled mb-0">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        var user = await UserManager.GetUserAsync(User);
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white d-flex align-items-center gap-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle text-accent fs-5"></i> @user?.FullName
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end border-1 rounded-0 shadow-sm mt-2" aria-labelledby="userDropdown">
+                <li>
+                    <a class="dropdown-item py-2" asp-area="" asp-controller="Account" asp-action="Profile">
+                        <i class="fas fa-user me-2 text-secondary"></i>My Profile
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider my-1"></li>
+                <li>
+                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm" class="m-0">
+                        <button type="submit" class="dropdown-item py-2 text-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-white d-flex align-items-center gap-1" asp-area="" asp-controller="Account" asp-action="Register">
+                <i class="fas fa-user-plus text-accent"></i> Register
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-white d-flex align-items-center gap-1" asp-area="" asp-controller="Account" asp-action="Login">
+                <i class="fas fa-sign-in-alt text-accent"></i> Login
+            </a>
+        </li>
+    }
+</ul>

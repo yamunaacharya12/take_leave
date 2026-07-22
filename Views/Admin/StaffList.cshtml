@@ -1,0 +1,192 @@
+﻿@model List<Take_Leave.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Staff Management - Admin";
+    var designations = new List<string> { "Staff", "Faculty", "HOD", "Examination", "Library", "Accounts", "Reception", "Admin" };
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-users" style="color:var(--primary);"></i> Staff Management</h1>
+        <p>Manage staff and department head accounts</p>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createStaffModal">
+        <i class="fas fa-user-plus me-1"></i> Add Staff
+    </button>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="section-card">
+    <div class="card-header">
+        <h2><i class="fas fa-list me-1"></i> All Staff</h2>
+    </div>
+    <div class="card-body p-0">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table id="staffTable" class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Employee ID</th>
+                            <th>Department</th>
+                            <th>Designation</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 1;
+                        }
+                        @foreach (var s in Model)
+                        {
+                            <tr>
+                                <td>@i</td>
+                                <td class="fw-semibold" style="color:var(--primary);">@s.FullName</td>
+                                <td>@(string.IsNullOrWhiteSpace(s.EmployeeId) ? "—" : s.EmployeeId)</td>
+                                <td>@(s.Department?.Name ?? "—")</td>
+                                <td>@s.Designation</td>
+                                <td>@s.UserRole</td>
+                                <td>
+                                    <span class="status-badge @(s.IsActive ? "status-approved" : "status-rejected")">
+                                        @(s.IsActive ? "Active" : "Inactive")
+                                    </span>
+                                </td>
+                                <td>
+                                    <a asp-action="EditStaff" asp-route-id="@s.Id" class="btn btn-outline-primary btn-icon"><i class="fas fa-pen"></i></a>
+                                    <a asp-action="StaffLeaveHistory" asp-route-id="@s.Id" class="btn btn-outline-secondary btn-icon"><i class="fas fa-history"></i></a>
+                                    @if (s.IsActive)
+                                    {
+                                        <button type="button" class="btn btn-outline-danger btn-icon js-deactivate" data-id="@s.Id"><i class="fas fa-user-slash"></i></button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-outline-success btn-icon js-activate" data-id="@s.Id"><i class="fas fa-user-check"></i></button>
+                                    }
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-users-slash"></i>
+                No staff members found.
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Add Staff Modal -->
+<div class="modal fade" id="createStaffModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:14px;">
+            <form asp-action="CreateStaff" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" style="color:var(--primary); font-weight:700;">Add Staff Member</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; text-transform:uppercase;">Full Name</label>
+                            <input type="text" name="FullName" class="form-control" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; text-transform:uppercase;">Employee ID <span style="text-transform:none; font-weight:400; color:var(--text-faint);">(optional)</span></label>
+                            <input type="text" name="EmployeeId" class="form-control" autocomplete="off" data-lpignore="true" data-1p-ignore placeholder="Leave blank if not applicable" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; text-transform:uppercase;">Email</label>
+                            <input type="email" name="Email" class="form-control" autocomplete="off" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; text-transform:uppercase;">Department</label>
+                            <select name="DepartmentId" class="form-select" required>
+                                @if (ViewBag.Departments != null)
+                                {
+                                    foreach (var d in (List<Take_Leave.Models.Department>)ViewBag.Departments)
+                                    {
+                                        <option value="@d.Id">@d.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; text-transform:uppercase;">Designation</label>
+                            <select name="Designation" class="form-select">
+                                @foreach (var des in designations)
+                                {
+                                    <option value="@des">@des</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; text-transform:uppercase;">Joining Date</label>
+                            <input type="date" name="JoiningDate" class="form-control" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label" style="font-size:11.5px; font-weight:700; text-transform:uppercase;">Temporary Password</label>
+                            <input type="password" name="Password" class="form-control" autocomplete="new-password" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Staff</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function() {
+            if ($('#staffTable tbody tr').length) {
+                $('#staffTable').DataTable({ order: [], pageLength: 10 });
+            }
+        });
+
+        function postAction(url, id) {
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (token) {
+                var clone = token.cloneNode(true);
+                form.appendChild(clone);
+            }
+            var input = document.createElement('input');
+            input.type = 'hidden'; input.name = 'userId'; input.value = id;
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        document.querySelectorAll('.js-deactivate').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                if (confirm('Deactivate this staff member?')) postAction('@Url.Action("DeactivateStaff", "Admin")', btn.dataset.id);
+            });
+        });
+        document.querySelectorAll('.js-activate').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                postAction('@Url.Action("ActivateStaff", "Admin")', btn.dataset.id);
+            });
+        });
+    </script>
+}

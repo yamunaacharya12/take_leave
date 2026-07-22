@@ -1,0 +1,139 @@
+﻿@model List<Take_Leave.Models.LeaveRequest>
+@{
+    ViewData["Title"] = "Staff Dashboard";
+    int pending = ViewBag.PendingRequests ?? 0;
+    int approved = ViewBag.ApprovedRequests ?? 0;
+    int rejected = ViewBag.RejectedRequests ?? 0;
+    int total = Model?.Count ?? 0;
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-th-large" style="color:var(--primary);"></i> Staff Dashboard</h1>
+    </div>
+    <a asp-action="ApplyLeave" class="btn btn-primary"><i class="fas fa-plus-circle me-1"></i> Apply for Leave</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card navy">
+            <div class="accent-bar"></div>
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">PENDING LEAVES</div>
+                    <div class="stat-value">@pending</div>
+                </div>
+                <div class="icon-wrap"><i class="fas fa-file-alt"></i></div>
+            </div>
+            <div class="stat-sub"><i class="fas fa-circle" style="font-size:6px; color:var(--primary);"></i> Awaiting approval</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card gold">
+            <div class="accent-bar"></div>
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">APPROVED LEAVES</div>
+                    <div class="stat-value">@approved</div>
+                </div>
+                <div class="icon-wrap"><i class="fas fa-calendar-check"></i></div>
+            </div>
+            <div class="stat-sub"><i class="fas fa-circle" style="font-size:6px; color:#d4a017;"></i> All time</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card pink">
+            <div class="accent-bar"></div>
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">REJECTED LEAVES</div>
+                    <div class="stat-value">@rejected</div>
+                </div>
+                <div class="icon-wrap"><i class="fas fa-times-circle"></i></div>
+            </div>
+            <div class="stat-sub"><i class="fas fa-circle" style="font-size:6px; color:var(--accent);"></i> All time</div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card green">
+            <div class="accent-bar"></div>
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-label">TOTAL REQUESTS</div>
+                    <div class="stat-value">@total</div>
+                </div>
+                <div class="icon-wrap"><i class="fas fa-chart-line"></i></div>
+            </div>
+            <div class="stat-sub"><i class="fas fa-circle" style="font-size:6px; color:#16a34a;"></i> All time</div>
+        </div>
+    </div>
+</div>
+
+<div class="section-card">
+    <div class="card-header">
+        <h2><i class="fas fa-calendar-alt me-1"></i> Recent Leave Applications</h2>
+    </div>
+    <div class="card-body p-0">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Leave Type</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Days</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 1;
+                        }
+                        @foreach (var r in Model.Take(5))
+                        {
+                            <tr>
+                                <td>@i</td>
+                                <td class="fw-semibold" style="color:var(--primary);">@r.LeaveType</td>
+                                <td>@r.StartDate.ToString("MMM d, yyyy")</td>
+                                <td>@r.EndDate.ToString("MMM d, yyyy")</td>
+                                <td>@r.TotalDays</td>
+                                <td>
+                                    @{
+                                        string css = r.Status.ToString() switch
+                                        {
+                                            "Approved" => "status-approved",
+                                            "Rejected" or "RejectedByDepartmentHead" => "status-rejected",
+                                            "ApprovedByDepartmentHead" => "status-head-approved",
+                                            _ => "status-pending"
+                                        };
+                                    }
+                                    <span class="status-badge @css">@r.Status</span>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                No leave applications yet.
+            </div>
+        }
+    </div>
+</div>

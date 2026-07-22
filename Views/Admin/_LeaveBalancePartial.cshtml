@@ -1,0 +1,82 @@
+﻿@model Take_Leave.Models.ApplicationUser
+
+@if (Model != null)
+{
+    <!-- Header Block with Clean Typography -->
+    <div class="mb-4 border-bottom pb-3">
+        <h4 class="text-dark fw-bold m-0" style="font-size: 1.1rem;">
+            Leave Balance Summary
+        </h4>
+        <p class="text-muted small mb-0">
+            Current allocations for <span class="fw-semibold text-dark">@Model.FullName</span> for the year @DateTime.Now.Year
+        </p>
+    </div>
+
+    <!-- Restyled Metric Balance Cards -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="stat-card pink shadow-sm h-100">
+                <div class="accent-bar"></div>
+                <div class="icon-wrap">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-label">ANNUAL LEAVE</div>
+                <div class="stat-value text-dark" style="font-size: 1.75rem;">@Model.AnnualLeaveBalance</div>
+                <div class="text-muted small mt-1" style="font-size: 0.75rem;">Days Remaining</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card navy shadow-sm h-100">
+                <div class="accent-bar"></div>
+                <div class="icon-wrap">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="stat-label">SICK LEAVE</div>
+                <div class="stat-value text-dark" style="font-size: 1.75rem;">@Model.SickLeaveBalance</div>
+                <div class="text-muted small mt-1" style="font-size: 0.75rem;">Days Remaining</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card gold shadow-sm h-100">
+                <div class="accent-bar"></div>
+                <div class="icon-wrap">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="stat-label">EMERGENCY LEAVE</div>
+                <div class="stat-value text-dark" style="font-size: 1.75rem;">@Model.EmergencyLeaveBalance</div>
+                <div class="text-muted small mt-1" style="font-size: 0.75rem;">Days Remaining</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flat Card Leave Policy Sheet -->
+    <div class="alert bg-light border text-dark mt-4 mb-0 p-3 shadow-sm rounded-2">
+        <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom">
+            <i class="fas fa-info-circle text-accent"></i>
+            <strong class="small text-uppercase tracking-wider fw-bold">Standard Institutional Leave Allowances</strong>
+        </div>
+        <div class="row g-2 text-secondary small">
+            <div class="col-sm-4 d-flex align-items-center gap-2">
+                <span class="badge bg-dark-subtle text-dark rounded-circle px-2 py-1" style="font-size: 0.7rem;">A</span>
+                <span>Annual Leave: <strong>20 Days / Year</strong></span>
+            </div>
+            <div class="col-sm-4 d-flex align-items-center gap-2">
+                <span class="badge bg-dark-subtle text-dark rounded-circle px-2 py-1" style="font-size: 0.7rem;">S</span>
+                <span>Sick Leave: <strong>12 Days / Year</strong></span>
+            </div>
+            <div class="col-sm-4 d-flex align-items-center gap-2">
+                <span class="badge bg-dark-subtle text-dark rounded-circle px-2 py-1" style="font-size: 0.7rem;">E</span>
+                <span>Emergency Leave: <strong>5 Days / Year</strong></span>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Unified Flat Warning Container -->
+    <div class="text-center p-4 border border-dashed rounded-3 bg-light my-2">
+        <i class="fas fa-user-slash text-danger mb-3" style="font-size: 2rem;"></i>
+        <h5 class="text-dark fw-semibold small mb-1">Records Unobtainable</h5>
+        <p class="text-muted small mb-0">Leave balance tracking logs are not active or initialized for this user sequence.</p>
+    </div>
+}

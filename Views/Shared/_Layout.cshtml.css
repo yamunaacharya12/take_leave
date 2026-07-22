@@ -1,0 +1,103 @@
+﻿/* ── site.css — Texas College Leave Management System ── */
+
+:root {
+    --primary: #1a3a6e;
+    --primary-dark: #122a54;
+    --primary-light: #234a88;
+    --accent: #e8197d;
+    --accent-dark: #c0145f;
+}
+
+/* ── Global link color ── */
+a {
+    color: var(--primary);
+}
+
+    a:hover {
+        color: var(--primary-light);
+    }
+
+    /* ── Navbar brand ── */
+    a.navbar-brand {
+        white-space: normal;
+        text-align: center;
+        word-break: break-all;
+    }
+
+/* ── Bootstrap button overrides ── */
+.btn-primary {
+    color: #fff;
+    background-color: var(--primary);
+    border-color: var(--primary-dark);
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background-color: var(--primary-light);
+        border-color: var(--primary);
+        color: #fff;
+    }
+
+/* ── Nav pills ── */
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    color: #fff;
+    background-color: var(--primary);
+    border-color: var(--primary-dark);
+}
+
+/* ── Utility borders ── */
+.border-top {
+    border-top: 1px solid #e5e5e5;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+/* ── Box shadow utility ── */
+.box-shadow {
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+/* ── Cookie / policy button ── */
+button.accept-policy {
+    font-size: 1rem;
+    line-height: inherit;
+}
+
+/* ── Footer ── */
+.footer {
+    /* sticky footer handled by flex layout in _Layout.cshtml */
+    width: 100%;
+    white-space: nowrap;
+    line-height: 60px;
+}
+
+/* ── Form controls ── */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 0.2rem rgba(26, 58, 110, 0.18);
+}
+
+/* ── Accent / pink highlights for links in content ── */
+.text-accent {
+    color: var(--accent) !important;
+}
+
+.bg-accent {
+    background-color: var(--accent) !important;
+}
+
+.btn-accent {
+    background-color: var(--accent);
+    border-color: var(--accent-dark);
+    color: #fff;
+}
+
+    .btn-accent:hover {
+        background-color: var(--accent-dark);
+        border-color: var(--accent-dark);
+        color: #fff;
+    }

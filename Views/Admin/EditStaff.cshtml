@@ -1,0 +1,87 @@
+﻿@model Take_Leave.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "Edit Staff";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var departments = ViewBag.Departments as List<Take_Leave.Models.Department>;
+    var designations = new List<string> { "Staff", "Faculty", "HOD", "Examination", "Library", "Accounts", "Reception", "Admin" };
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="section-card shadow-sm">
+                <div class="card-header">
+                    <h2 class="m-0">
+                        <i class="fas fa-user-edit me-2 text-accent"></i>Modify Staff Identity Profile
+                    </h2>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="EditStaff" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="UserName" />
+                        <input type="hidden" asp-for="Email" />
+                        <input type="hidden" asp-for="EmployeeId" />
+
+                        <div class="row g-3 mb-4 bg-light p-3 rounded-2 border">
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary fw-semibold">System Email Anchor</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-envelope"></i></span>
+                                    <input value="@Model.Email" class="form-control form-control-sm bg-white border-start-0 text-secondary" disabled style="cursor: not-allowed;" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary fw-semibold">Institutional Ledger ID</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-fingerprint"></i></span>
+                                    <input value="@Model.EmployeeId" class="form-control form-control-sm bg-white border-start-0 text-secondary fw-bold" disabled style="cursor: not-allowed;" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="FullName" class="form-label small text-secondary fw-semibold">Operator Full Name</label>
+                                <input asp-for="FullName" class="form-control form-control-sm text-dark" required placeholder="Enter formal identity name..." />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-secondary fw-semibold">Assigned Department Unit</label>
+                                <select name="DepartmentId" class="form-select form-select-sm text-dark" required>
+                                    @if (departments != null)
+                                    {
+                                        foreach (var d in departments)
+                                        {
+                                            <option value="@d.Id" selected="@(d.Id == Model.DepartmentId)">@d.Name</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label small text-secondary fw-semibold">Official Corporate Title</label>
+                                <select asp-for="Designation" class="form-select form-select-sm text-dark">
+                                    @foreach (var des in designations)
+                                    {
+                                        <option value="@des" selected="@(des == Model.Designation)">@des</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <a asp-action="StaffList" class="btn btn-sm btn-light border px-3">
+                                <i class="fas fa-undo me-1"></i> Discard
+                            </a>
+                            <button type="submit" class="btn btn-sm btn-primary px-4 shadow-sm">
+                                <i class="fas fa-save me-1"></i> Commit Alterations
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
