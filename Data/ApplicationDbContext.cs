@@ -12,7 +12,6 @@ namespace Take_Leave.Data
         }
 
         public DbSet<Department> Departments { get; set; }
-        public DbSet<Take_Leave.Models.Notice> Notices { get; set; }
 
 
         public DbSet<LeaveRequest> LeaveRequests { get; set; }
@@ -80,13 +79,6 @@ namespace Take_Leave.Data
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Notice <-> Department many-to-many.
-            // Unidirectional: Department has no collection back to Notices, so we
-            // configure it explicitly here. EF Core auto-creates the join table
-            // "DepartmentNotice" with two FK columns.
-            builder.Entity<Notice>()
-                .HasMany(n => n.Departments)
-                .WithMany();
         }
     }
 }

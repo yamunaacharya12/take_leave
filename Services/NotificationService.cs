@@ -7,26 +7,38 @@ namespace Take_Leave.Services
     public class NotificationService : INotificationService
     {
         private readonly IEmailService _emailService;
+        private readonly IWhatsAppService _whatsAppService;
         private readonly ApplicationDbContext _context;
         private readonly ILogger<NotificationService> _logger;
 
         public NotificationService(
             IEmailService emailService,
+            IWhatsAppService whatsAppService,
             ApplicationDbContext context,
             ILogger<NotificationService> logger)
         {
             _emailService = emailService;
+            _whatsAppService = whatsAppService;
             _context = context;
             _logger = logger;
         }
 
-        // ===================================================================
-        // FALLBACK METHOD TO RETAIN COMPLIANCE WITH INOTIFICATIONSERVICE
-        // ===================================================================
-        public Task SendWhatsAppAsync(string mobileNumber, string message)
+        // Real implementation — replaces the old no-op stub. Fails silently
+        // (just logs) if the number is missing or Twilio isn't configured,
+        // so a WhatsApp failure never blocks the rest of the notification flow.
+        public async Task SendWhatsAppAsync(string mobileNumber, string message)
         {
-            _logger.LogInformation("SendWhatsAppAsync was invoked but is currently disabled on this infrastructure branch.");
-            return Task.CompletedTask;
+            if (string.IsNullOrWhiteSpace(mobileNumber))
+            {
+                _logger.LogWarning("WhatsApp message skipped — no phone number on file.");
+                return;
+            }
+
+            bool sent = await _whatsAppService.SendWhatsAppMessageAsync(mobileNumber, message);
+            if (!sent)
+            {
+                _logger.LogWarning("WhatsApp message to {Number} could not be sent.", mobileNumber);
+            }
         }
 
         public async Task NotifyLeaveApplicationAsync(LeaveRequest leaveRequest)
@@ -59,9 +71,15 @@ namespace Take_Leave.Services
         {
             var user = await _context.Users.FindAsync(leaveRequest.UserId);
             var department = await _context.Departments.FindAsync(int.Parse(leaveRequest.DepartmentId));
-            var departmentHead = await _context.Users.FindAsync(department?.HeadUserId);
+            var departmentHead = department?.HeadUserId != null
+                ? await _context.Users.FindAsync(department.HeadUserId)
+                : null;
 
-            if (departmentHead == null) return;
+            if (departmentHead == null)
+            {
+                _logger.LogWarning("No department head assigned for department {DeptId} — leave request {LeaveId} was not routed for approval notification.", leaveRequest.DepartmentId, leaveRequest.Id);
+                return;
+            }
 
             var subject = $"New Leave Application - {user?.FullName} ({department?.Name})";
             var body = $@"
@@ -81,6 +99,15 @@ namespace Take_Leave.Services
                 <a href='https://yourdomain.com/DepartmentHead/ReviewLeave/{leaveRequest.Id}'>Review Application</a>";
 
             await SendNotificationAsync(departmentHead, subject, body, leaveRequest.Id);
+
+            // WhatsApp — this is the urgent-path notification: department heads
+            // may not check email as fast as WhatsApp, so this is sent
+            // alongside the email above, not instead of it.
+            string whatsAppMessage = $"New leave request from {user?.FullName} ({leaveRequest.LeaveType}, " +
+                $"{leaveRequest.StartDate:MMM d} - {leaveRequest.EndDate:MMM d}, {leaveRequest.TotalDays} day(s)) " +
+                $"is awaiting your approval. Please review it in the Leave Management System.";
+
+            await SendWhatsAppAsync(departmentHead.PhoneNumber, whatsAppMessage);
         }
 
         public async Task NotifyAdminAsync(LeaveRequest leaveRequest)
@@ -145,6 +172,14 @@ namespace Take_Leave.Services
                 <p>Thank you for using Texas College Leave Management System.</p>";
 
             await SendNotificationAsync(user, subject, body, leaveRequest.Id);
+
+            // WhatsApp — staff get an immediate ping the moment their status changes,
+            // rather than waiting on them to check email.
+            string whatsAppMessage = $"Your leave request ({leaveRequest.LeaveType}, " +
+                $"{leaveRequest.StartDate:MMM d} - {leaveRequest.EndDate:MMM d}) has been {statusMessage}." +
+                (string.IsNullOrEmpty(comments) ? "" : $" Comments: {comments}");
+
+            await SendWhatsAppAsync(user.PhoneNumber, whatsAppMessage);
         }
 
         public async Task NotifyLeaveBalanceAlertAsync(ApplicationUser user, LeaveType leaveType)

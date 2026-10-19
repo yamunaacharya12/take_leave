@@ -1,0 +1,97 @@
+﻿@model List<Take_Leave.Models.LeaveRequest>
+@{
+    ViewData["Title"] = "Pending Approvals - Department Head";
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-clock" style="color:var(--primary);"></i> Pending Approvals</h1>
+        <p>Leave requests awaiting your decision</p>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="section-card">
+    <div class="card-header">
+        <h2><i class="fas fa-list me-1"></i> Awaiting Decision</h2>
+    </div>
+    <div class="card-body p-0">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Staff</th>
+                            <th>Leave Type</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Days</th>
+                            <th>Reason</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 1;
+                        }
+                        @foreach (var r in Model)
+                        {
+                            <tr>
+                                <td>@i</td>
+                                <td class="fw-semibold" style="color:var(--primary);">@r.User?.FullName</td>
+                                <td>@r.LeaveType</td>
+                                <td>@r.StartDate.ToString("MMM d, yyyy")</td>
+                                <td>@r.EndDate.ToString("MMM d, yyyy")</td>
+                                <td>@r.TotalDays</td>
+                                <td>@r.Reason</td>
+                                <td>
+                                    <form asp-action="ApproveLeave" method="post" class="d-inline">
+                                        <input type="hidden" name="leaveId" value="@r.Id" />
+                                        <input type="hidden" name="comments" class="js-comments" />
+                                        <button type="submit" class="btn btn-success btn-sm btn-icon js-approve-btn">Approve</button>
+                                    </form>
+                                    <form asp-action="RejectLeave" method="post" class="d-inline">
+                                        <input type="hidden" name="leaveId" value="@r.Id" />
+                                        <input type="hidden" name="comments" class="js-comments" />
+                                        <button type="submit" class="btn btn-danger btn-sm btn-icon js-reject-btn">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                No pending leave requests — you're all caught up.
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.js-approve-btn, .js-reject-btn').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                var isReject = btn.classList.contains('js-reject-btn');
+                var comment = window.prompt(isReject ? 'Reason for rejection (optional):' : 'Comments (optional):', '');
+                if (comment === null) { e.preventDefault(); return; }
+                btn.closest('form').querySelector('.js-comments').value = comment;
+            });
+        });
+    </script>
+}

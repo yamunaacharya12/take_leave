@@ -1,0 +1,72 @@
+﻿@model List<Take_Leave.Models.LeaveRequest>
+@{
+    ViewData["Title"] = "Staff Leave History - Department Head";
+}
+
+<div class="page-header">
+    <div>
+        <h1><i class="fas fa-history" style="color:var(--primary);"></i> Leave History</h1>
+        <p>@ViewBag.StaffName</p>
+    </div>
+    <a asp-action="StaffList" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i> Back to My Staff</a>
+</div>
+
+<div class="section-card">
+    <div class="card-header">
+        <h2><i class="fas fa-list me-1"></i> All Leave Applications</h2>
+    </div>
+    <div class="card-body p-0">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Leave Type</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Days</th>
+                            <th>Reason</th>
+                            <th>Applied On</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int i = 1;
+                        }
+                        @foreach (var r in Model)
+                        {
+                            string css = r.Status.ToString() switch
+                            {
+                                "Approved" => "status-approved",
+                                "Rejected" or "RejectedByDepartmentHead" => "status-rejected",
+                                "ApprovedByDepartmentHead" => "status-head-approved",
+                                _ => "status-pending"
+                            };
+                            <tr>
+                                <td>@i</td>
+                                <td class="fw-semibold" style="color:var(--primary);">@r.LeaveType</td>
+                                <td>@r.StartDate.ToString("MMM d, yyyy")</td>
+                                <td>@r.EndDate.ToString("MMM d, yyyy")</td>
+                                <td>@r.TotalDays</td>
+                                <td>@r.Reason</td>
+                                <td>@r.RequestDate.ToString("MMM d, yyyy")</td>
+                                <td><span class="status-badge @css">@r.Status</span></td>
+                            </tr>
+                            i++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                This staff member hasn't submitted any leave applications yet.
+            </div>
+        }
+    </div>
+</div>

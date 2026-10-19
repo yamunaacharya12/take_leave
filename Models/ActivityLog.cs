@@ -14,12 +14,12 @@ namespace Take_Leave.Models
     // General-purpose audit/activity log for the admin feed.
     // Separate from NotificationLog, which only tracks email/WhatsApp delivery
     // for leave requests. This table can log ANY event: leave actions,
-    // staff registration, security events, notices, system events, etc.
+    // staff registration, security events, system events, etc.
     public class ActivityLog
     {
         public int Id { get; set; }
 
-        // "Leave", "Staff", "Security", "Notice", "System"
+        // "Leave", "Staff", "Security", "System"
         public string Category { get; set; } = string.Empty;
 
         public ActivityLevel Level { get; set; } = ActivityLevel.Info;

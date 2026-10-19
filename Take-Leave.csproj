@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Take_Leave</RootNamespace>
+    <UserSecretsId>c1e4a8f2-6b3d-4a91-9e77-2d5f8b0a3c6e</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

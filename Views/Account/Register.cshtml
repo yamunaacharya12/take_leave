@@ -19,13 +19,23 @@
 
             <form asp-controller="Account" asp-action="Register" method="post" autocomplete="off">
                 <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">I am registering as</label>
+                        <div class="btn-group w-100" role="group" aria-label="Applicant role">
+                            <input type="radio" class="btn-check" name="ApplicantRole" id="roleStaff" value="Staff" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="roleStaff"><i class="fas fa-chalkboard-teacher me-1"></i> Teacher / Staff</label>
+
+                            <input type="radio" class="btn-check" name="ApplicantRole" id="roleStudent" value="Student" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="roleStudent"><i class="fas fa-user-graduate me-1"></i> Student</label>
+                        </div>
+                    </div>
                     <div class="col-md-6">
                         <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Full Name</label>
                         <input asp-for="FullName" class="form-control" autocomplete="name" required />
                         <span asp-validation-for="FullName" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Employee ID <span style="text-transform:none; font-weight:400; color:var(--text-faint);">(optional)</span></label>
+                        <label id="lblEmployeeId" class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Employee ID <span style="text-transform:none; font-weight:400; color:var(--text-faint);">(optional)</span></label>
                         <input asp-for="EmployeeId" class="form-control" autocomplete="off" data-lpignore="true" data-1p-ignore placeholder="Leave blank if not applicable" />
                         <span asp-validation-for="EmployeeId" class="text-danger small"></span>
                     </div>
@@ -35,7 +45,7 @@
                         <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Department</label>
+                        <label id="lblDepartment" class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Department</label>
                         <select asp-for="DepartmentId" class="form-select" required>
                             <option value="">Select department</option>
                             @if (departments != null)
@@ -49,7 +59,7 @@
                         <span asp-validation-for="DepartmentId" class="text-danger small"></span>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Designation</label>
+                        <label id="lblDesignation" class="form-label" style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Designation</label>
                         <input asp-for="Designation" class="form-control" autocomplete="organization-title" />
                     </div>
                     <div class="col-md-6">
@@ -77,3 +87,30 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var staffRadio = document.getElementById('roleStaff');
+            var studentRadio = document.getElementById('roleStudent');
+            var lblEmployeeId = document.getElementById('lblEmployeeId');
+            var lblDepartment = document.getElementById('lblDepartment');
+            var lblDesignation = document.getElementById('lblDesignation');
+            var employeeIdInput = document.querySelector('[name="EmployeeId"]');
+            var designationInput = document.querySelector('[name="Designation"]');
+
+            function applyLabels(isStudent) {
+                lblEmployeeId.innerHTML = isStudent
+                    ? 'Roll Number <span style="text-transform:none; font-weight:400; color:var(--text-faint);">(optional)</span>'
+                    : 'Employee ID <span style="text-transform:none; font-weight:400; color:var(--text-faint);">(optional)</span>';
+                lblDepartment.textContent = isStudent ? 'Program' : 'Department';
+                lblDesignation.textContent = isStudent ? 'Semester / Year' : 'Designation';
+                employeeIdInput.placeholder = isStudent ? 'e.g. BIT-2023-014' : 'Leave blank if not applicable';
+                designationInput.placeholder = isStudent ? 'e.g. 5th Semester' : '';
+            }
+
+            staffRadio.addEventListener('change', function () { applyLabels(false); });
+            studentRadio.addEventListener('change', function () { applyLabels(true); });
+        })();
+    </script>
+}

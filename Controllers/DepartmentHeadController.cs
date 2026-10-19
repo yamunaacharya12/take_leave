@@ -181,7 +181,7 @@ namespace Take_Leave.Controllers
             var department = await _context.Departments.FirstOrDefaultAsync(d => d.HeadUserId == head.Id);
 
             var staff = await _userManager.Users
-                .Where(u => u.DepartmentId == department.Id && u.UserRole == UserRole.Staff && u.IsApproved)
+                .Where(u => u.DepartmentId == department.Id && (u.UserRole == UserRole.Staff || u.UserRole == UserRole.Student) && u.IsApproved)
                 .ToListAsync();
 
             return View(staff);

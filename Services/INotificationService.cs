@@ -5,8 +5,10 @@ namespace Take_Leave.Services
 {
     public interface INotificationService
     {
-        // New utility method required for direct admin panel triggers
-        //Task SendWhatsAppAsync(string mobileNumber, string message);
+        // Sends a raw WhatsApp message directly — used internally by the
+        // business-workflow methods below, but also exposed for direct
+        // admin-panel triggers if ever needed.
+        Task SendWhatsAppAsync(string mobileNumber, string message);
 
         // Your existing business workflow methods
         Task NotifyLeaveApplicationAsync(LeaveRequest leaveRequest);

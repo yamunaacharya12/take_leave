@@ -36,6 +36,7 @@ namespace Take_Leave.Models
     {
         Staff,
         DepartmentHead,
-        Admin
+        Admin,
+        Student
     }
 }

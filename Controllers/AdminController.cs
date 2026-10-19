@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,17 +14,20 @@ namespace Take_Leave.Controllers
     public class AdminController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;   // NEW
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
         private readonly IActivityLogService _activityLog;
 
         public AdminController(
             UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,               // NEW
             ApplicationDbContext context,
             IEmailService emailService,
             IActivityLogService activityLog)
         {
             _userManager = userManager;
+            _roleManager = roleManager;                          // NEW
             _context = context;
             _emailService = emailService;
             _activityLog = activityLog;
@@ -42,11 +45,11 @@ namespace Take_Leave.Controllers
                 IQueryable<ApplicationUser> userQuery = _userManager.Users.Include(u => u.Department);
                 if (isAdmin)
                 {
-                    userQuery = userQuery.Where(u => !u.IsApproved && u.UserRole == UserRole.Staff);
+                    userQuery = userQuery.Where(u => !u.IsApproved && (u.UserRole == UserRole.Staff || u.UserRole == UserRole.Student));
                 }
                 else
                 {
-                    userQuery = userQuery.Where(u => !u.IsApproved && u.UserRole == UserRole.Staff && u.Department.HeadUserId == currentUserId);
+                    userQuery = userQuery.Where(u => !u.IsApproved && (u.UserRole == UserRole.Staff || u.UserRole == UserRole.Student) && u.Department.HeadUserId == currentUserId);
                 }
                 var pendingRegistrations = await userQuery.ToListAsync();
 
@@ -67,7 +70,7 @@ namespace Take_Leave.Controllers
                 {
                     PendingRegistrations = pendingRegistrations,
                     PendingLeaves = pendingLeaves,
-                    TotalStaff = await _userManager.Users.CountAsync(u => u.IsApproved && u.UserRole == UserRole.Staff),
+                    TotalStaff = await _userManager.Users.CountAsync(u => u.IsApproved && (u.UserRole == UserRole.Staff || u.UserRole == UserRole.Student)),
                     PendingLeavesCount = pendingLeaves.Count,
                     PendingRegistrationsCount = pendingRegistrations.Count,
                     TotalLeavesThisMonth = await _context.LeaveRequests.CountAsync(l => l.RequestDate.Month == DateTime.Now.Month && l.RequestDate.Year == DateTime.Now.Year),
@@ -95,7 +98,7 @@ namespace Take_Leave.Controllers
                 // 1. Fetch the filtered user data into memory from the database ledger first
                 var staffList = await _userManager.Users
                     .Include(u => u.Department)
-                    .Where(u => u.UserRole == UserRole.Staff || u.UserRole == UserRole.DepartmentHead)
+                    .Where(u => u.UserRole == UserRole.Staff || u.UserRole == UserRole.DepartmentHead || u.UserRole == UserRole.Student)
                     .ToListAsync();
 
                 // 2. Safely perform fallback sorting using LINQ-to-Objects to prevent expression errors
@@ -782,6 +785,18 @@ namespace Take_Leave.Controllers
                     return Json(new { success = false, message = "User not found" });
                 }
 
+                // NEW: make sure both roles actually exist in AspNetRoles before
+                // anything below tries to add/remove them — this is what was
+                // throwing "Role DepartmentHead does not exist."
+                if (!await _roleManager.RoleExistsAsync("DepartmentHead"))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole("DepartmentHead"));
+                }
+                if (!await _roleManager.RoleExistsAsync("Staff"))
+                {
+                    await _roleManager.CreateAsync(new IdentityRole("Staff"));
+                }
+
                 // Demote the CURRENT head of THIS department (if any), since they're being replaced
                 if (!string.IsNullOrEmpty(department.HeadUserId) && department.HeadUserId != userId)
                 {
@@ -790,7 +805,14 @@ namespace Take_Leave.Controllers
                     {
                         oldHead.UserRole = UserRole.Staff;
                         await _userManager.UpdateAsync(oldHead);
-                        await _userManager.RemoveFromRoleAsync(oldHead, "DepartmentHead");
+                        if (await _userManager.IsInRoleAsync(oldHead, "DepartmentHead"))
+                        {
+                            await _userManager.RemoveFromRoleAsync(oldHead, "DepartmentHead");
+                        }
+                        if (!await _userManager.IsInRoleAsync(oldHead, "Staff"))
+                        {
+                            await _userManager.AddToRoleAsync(oldHead, "Staff");
+                        }
                     }
                 }
 
@@ -811,7 +833,23 @@ namespace Take_Leave.Controllers
 
                 newHead.UserRole = UserRole.DepartmentHead;
                 await _userManager.UpdateAsync(newHead);
-                await _userManager.AddToRoleAsync(newHead, "DepartmentHead");
+
+                // NEW: drop a stale "Staff" role entry first so the user doesn't
+                // end up sitting in both roles simultaneously
+                if (await _userManager.IsInRoleAsync(newHead, "Staff"))
+                {
+                    await _userManager.RemoveFromRoleAsync(newHead, "Staff");
+                }
+
+                if (!await _userManager.IsInRoleAsync(newHead, "DepartmentHead"))
+                {
+                    var addResult = await _userManager.AddToRoleAsync(newHead, "DepartmentHead");
+                    if (!addResult.Succeeded)
+                    {
+                        var errors = string.Join(" ", addResult.Errors.Select(e => e.Description));
+                        return Json(new { success = false, message = $"Saved, but role assignment failed: {errors}" });
+                    }
+                }
 
                 string activityMessage = otherDeptsLedByThisUser.Any()
                     ? $"{newHead.FullName} was reassigned as Head of {department.Name} (removed as Head of {string.Join(", ", otherDeptsLedByThisUser.Select(d => d.Name))})."

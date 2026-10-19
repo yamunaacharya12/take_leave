@@ -15,22 +15,19 @@ namespace Take_Leave.Controllers
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
-        private readonly IActivityLogService _activityLog;
 
         public AccountController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             RoleManager<IdentityRole> roleManager,
             ApplicationDbContext context,
-            IEmailService emailService,
-            IActivityLogService activityLog)
+            IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _context = context;
             _emailService = emailService;
-            _activityLog = activityLog;
         }
 
         [HttpGet]
@@ -48,7 +45,6 @@ namespace Take_Leave.Controllers
 
             if (ModelState.IsValid)
             {
-                // Find user by email
                 var user = await _userManager.FindByEmailAsync(model.Email);
 
                 if (user == null)
@@ -57,30 +53,25 @@ namespace Take_Leave.Controllers
                     return View(model);
                 }
 
-                // Check if account is approved
                 if (!user.IsApproved)
                 {
                     ModelState.AddModelError(string.Empty, "Your account is pending admin approval. Please check back later.");
                     return View(model);
                 }
 
-                // Check if account is active
                 if (!user.IsActive)
                 {
                     ModelState.AddModelError(string.Empty, "Your account has been deactivated. Please contact administrator.");
                     return View(model);
                 }
 
-                // Attempt login
                 var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, model.RememberMe, lockoutOnFailure: true);
 
                 if (result.Succeeded)
                 {
-                    // Update last login date
                     user.LastLoginDate = DateTime.UtcNow;
                     await _userManager.UpdateAsync(user);
 
-                    // Redirect based on role
                     if (await _userManager.IsInRoleAsync(user, "Admin"))
                     {
                         return RedirectToLocal(returnUrl) ?? RedirectToAction("Dashboard", "Admin");
@@ -98,13 +89,6 @@ namespace Take_Leave.Controllers
                 if (result.IsLockedOut)
                 {
                     ModelState.AddModelError(string.Empty, "Account locked out. Please try again later.");
-
-                    await _activityLog.LogAsync(
-                        category: "Security",
-                        message: $"Account for {user.FullName} was locked out after repeated failed login attempts.",
-                        level: ActivityLevel.Warning,
-                        performedByName: "System",
-                        recipientUserId: user.Id);
                 }
                 else if (result.IsNotAllowed)
                 {
@@ -132,21 +116,19 @@ namespace Take_Leave.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Check if employee ID already exists (skip check if left blank —
-                // multiple staff, e.g. HOD/Admin/Reception, may legitimately have no ID)
-                var existingUser = string.IsNullOrWhiteSpace(model.EmployeeId)
-                    ? null
-                    : await _userManager.Users
+                if (!string.IsNullOrWhiteSpace(model.EmployeeId))
+                {
+                    var existingUser = await _userManager.Users
                         .FirstOrDefaultAsync(u => u.EmployeeId == model.EmployeeId);
 
-                if (existingUser != null)
-                {
-                    ModelState.AddModelError("EmployeeId", "Employee ID already exists");
-                    ViewBag.Departments = _context.Departments.Where(d => d.IsActive).ToList();
-                    return View(model);
+                    if (existingUser != null)
+                    {
+                        ModelState.AddModelError("EmployeeId", "Employee ID already exists");
+                        ViewBag.Departments = _context.Departments.Where(d => d.IsActive).ToList();
+                        return View(model);
+                    }
                 }
 
-                // Check if email already exists
                 var existingEmail = await _userManager.FindByEmailAsync(model.Email);
                 if (existingEmail != null)
                 {
@@ -157,6 +139,8 @@ namespace Take_Leave.Controllers
 
                 var department = await _context.Departments.FindAsync(model.DepartmentId);
 
+                bool isStudent = model.ApplicantRole == "Student";
+
                 var user = new ApplicationUser
                 {
                     UserName = model.Email,
@@ -165,12 +149,11 @@ namespace Take_Leave.Controllers
                     EmployeeId = model.EmployeeId,
                     DepartmentId = model.DepartmentId,
                     Designation = model.Designation,
-
                     JoiningDate = model.JoiningDate,
-                    UserRole = UserRole.Staff,
+                    UserRole = isStudent ? UserRole.Student : UserRole.Staff,
                     IsApproved = false,
                     IsActive = true,
-                    EmailConfirmed = true, // Set to false if email confirmation is required
+                    EmailConfirmed = true,
                     RegistrationDate = DateTime.UtcNow,
                     AnnualLeaveBalance = 20,
                     SickLeaveBalance = 12,
@@ -181,41 +164,26 @@ namespace Take_Leave.Controllers
 
                 if (result.Succeeded)
                 {
-                    // Ensure Staff role exists
-                    if (!await _roleManager.RoleExistsAsync("Staff"))
+                    var roleName = isStudent ? "Student" : "Staff";
+                    if (!await _roleManager.RoleExistsAsync(roleName))
                     {
-                        await _roleManager.CreateAsync(new IdentityRole("Staff"));
+                        await _roleManager.CreateAsync(new IdentityRole(roleName));
                     }
 
-                    await _userManager.AddToRoleAsync(user, "Staff");
+                    await _userManager.AddToRoleAsync(user, roleName);
 
-                    await _activityLog.LogAsync(
-                        category: "Staff",
-                        message: $"New staff member {user.FullName} registered and awaiting approval.",
-                        level: ActivityLevel.Info,
-                        performedByName: "System",
-                        recipientUserId: user.Id);
-
-                    // Send notification to all admins
                     var admins = await _userManager.GetUsersInRoleAsync("Admin");
                     foreach (var admin in admins)
                     {
                         await _emailService.SendEmailAsync(admin.Email,
-                            "New Staff Registration Pending Approval",
-                            $@"<h3>New Staff Registration</h3>
+                            $"New {roleName} Registration Pending Approval",
+                            $@"<h3>New {roleName} Registration</h3>
                             <p><strong>Name:</strong> {user.FullName}</p>
-                            <p><strong>Employee ID:</strong> {user.EmployeeId}</p>
-                            <p><strong>Department:</strong> {user.Department}</p>
+                            <p><strong>{(isStudent ? "Roll Number" : "Employee ID")}:</strong> {user.EmployeeId}</p>
+                            <p><strong>{(isStudent ? "Program" : "Department")}:</strong> {department?.Name}</p>
                             <p><strong>Email:</strong> {user.Email}</p>
                             <p>Please login to the admin dashboard to approve or reject this registration.</p>");
                     }
-
-                    // ---> FIXED: Direct notification alert routed to your actual personal email <---
-                    await _emailService.SendEmailAsync("sherpadorjee2580@gmail.com",
-                        "System Alert: New Registration Request",
-                        $@"<h3>Registration Alert</h3>
-                        <p>A new staff profile for <strong>{user.FullName}</strong> (ID: {user.EmployeeId}) has been successfully logged.</p>
-                        <p>Please review the administrative dashboard portal to process these credentials.</p>");
 
                     TempData["Success"] = "Registration successful! Please wait for admin approval.";
                     return RedirectToAction("RegistrationPending");
@@ -268,19 +236,10 @@ namespace Take_Leave.Controllers
                         "Password Reset Request",
                         $"<h3>Password Reset</h3><p>Click <a href='{resetLink}'>here</a> to reset your password. This link expires in 24 hours.</p>");
 
-                    await _activityLog.LogAsync(
-                        category: "Security",
-                        message: $"Password reset requested for {user.FullName}.",
-                        level: ActivityLevel.Warning,
-                        performedByName: user.FullName,
-                        performedByUserId: user.Id,
-                        recipientUserId: user.Id);
-
                     TempData["Success"] = "Password reset link has been sent to your email.";
                 }
                 else
                 {
-                    // Don't reveal that the user doesn't exist
                     TempData["Success"] = "If the email exists, a password reset link has been sent.";
                 }
                 return RedirectToAction("Login");
@@ -307,14 +266,6 @@ namespace Take_Leave.Controllers
                     var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
                     if (result.Succeeded)
                     {
-                        await _activityLog.LogAsync(
-                            category: "Security",
-                            message: $"Password was reset via email link for {user.FullName}.",
-                            level: ActivityLevel.Warning,
-                            performedByName: user.FullName,
-                            performedByUserId: user.Id,
-                            recipientUserId: user.Id);
-
                         TempData["Success"] = "Password has been reset successfully.";
                         return RedirectToAction("Login");
                     }
@@ -362,11 +313,30 @@ namespace Take_Leave.Controllers
             user.FullName = model.FullName;
             user.Designation = model.Designation;
 
-            // NEW: allow changing your own role from the profile page.
-            // Keeps the UserRole column AND the Identity role table in sync,
-            // same pattern used in AdminController.AssignDepartmentHead.
             if (model.UserRole != user.UserRole)
             {
+                // NEW: if this user is currently listed as Head of any department(s)
+                // and is being changed to a different role, clear that headship.
+                // Otherwise Admin/Departments keeps showing them as "Head" forever,
+                // since Department.HeadUserId is a separate field that UserRole
+                // changes never touched before this fix.
+                if (user.UserRole == UserRole.DepartmentHead && model.UserRole != UserRole.DepartmentHead)
+                {
+                    var ledDepartments = await _context.Departments
+                        .Where(d => d.HeadUserId == user.Id)
+                        .ToListAsync();
+
+                    foreach (var dept in ledDepartments)
+                    {
+                        dept.HeadUserId = null;
+                    }
+
+                    if (ledDepartments.Any())
+                    {
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
                 var currentRoles = await _userManager.GetRolesAsync(user);
                 if (currentRoles.Any())
                 {
@@ -386,8 +356,6 @@ namespace Take_Leave.Controllers
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
-                // Role changed while signed in — refresh the auth cookie so the
-                // sidebar/permissions reflect the new role immediately.
                 await _signInManager.RefreshSignInAsync(user);
                 TempData["Success"] = "Profile updated successfully!";
             }
@@ -399,7 +367,6 @@ namespace Take_Leave.Controllers
             return RedirectToAction("Profile");
         }
 
-        // NEW: shared password-change endpoint — used by Admin, DepartmentHead, and Staff profile pages
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
@@ -420,15 +387,6 @@ namespace Take_Leave.Controllers
             if (result.Succeeded)
             {
                 await _signInManager.RefreshSignInAsync(user);
-
-                await _activityLog.LogAsync(
-                    category: "Security",
-                    message: $"{user.FullName} changed their account password.",
-                    level: ActivityLevel.Warning,
-                    performedByName: user.FullName,
-                    performedByUserId: user.Id,
-                    recipientUserId: user.Id);
-
                 TempData["Success"] = "Password changed successfully!";
             }
             else

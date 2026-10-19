@@ -9,7 +9,7 @@ using Take_Leave.Services;
 
 namespace Take_Leave.Controllers
 {
-    [Authorize(Roles = "Staff")]
+    [Authorize(Roles = "Staff,Student")]
     public class StaffController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -75,7 +75,11 @@ namespace Take_Leave.Controllers
                 TotalDays = model.TotalDays,
                 Reason = model.Reason,
                 Status = LeaveStatus.Pending,
-                RequestDate = DateTime.UtcNow
+                RequestDate = DateTime.UtcNow,
+                // Needed so DepartmentHeadController/NotifyDepartmentHeadAsync can
+                // route this request to the correct head — matches the applicant's
+                // own department at the time of applying.
+                DepartmentId = user.DepartmentId?.ToString() ?? string.Empty
             };
 
             if (document != null && document.Length > 0)
@@ -90,7 +94,19 @@ namespace Take_Leave.Controllers
 
             _context.LeaveRequests.Add(leaveRequest);
             await _context.SaveChangesAsync();
+
+            // Confirmation to the applicant themselves
             await _notificationService.NotifyLeaveApplicationAsync(leaveRequest);
+
+            // Notify the Department Head of the applicant's own faculty
+            await _notificationService.NotifyDepartmentHeadAsync(leaveRequest);
+
+            // NEW: also notify the Main Director (Admin) at the same time —
+            // previously this only fired later, inside
+            // DepartmentHeadController.ApproveLeave, which meant Admin only
+            // heard about a request AFTER the head had already approved it.
+            // Now both get notified together, right at submission.
+            await _notificationService.NotifyAdminAsync(leaveRequest);
 
             TempData["Success"] = "Leave application submitted successfully!";
             return RedirectToAction("Dashboard");
@@ -126,8 +142,9 @@ namespace Take_Leave.Controllers
 
             user.FullName = model.FullName;
             user.Designation = model.Designation;
-            user.Address = model.Address;       // NEW
-            user.DepartmentId = DepartmentId;   // NEW
+            user.Address = model.Address;
+            user.DepartmentId = DepartmentId;
+            user.PhoneNumber = model.PhoneNumber; // NEW: needed for WhatsApp notifications
 
             await _userManager.UpdateAsync(user);
             TempData["Success"] = "Profile updated successfully!";

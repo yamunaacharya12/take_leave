@@ -5,6 +5,10 @@ namespace Take_Leave.Models.ViewModels
     public class RegisterViewModel
     {
         [Required]
+        [Display(Name = "I am registering as")]
+        public string ApplicantRole { get; set; } = "Staff";
+
+        [Required]
         [Display(Name = "Full Name")]
         public string FullName { get; set; } = string.Empty;
 

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -89,6 +89,7 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 letter-spacing: .2px;
+                pointer-events: none;
             }
 
             .navbar-right {
@@ -326,11 +327,25 @@
                     border-radius: 14px 14px 0 0;
                 }
 
-                .stat-card.pink .accent-bar { background: #e8197d; }
-                .stat-card.gold .accent-bar { background: #d4a017; }
-                .stat-card.purple .accent-bar { background: #7c3aed; }
-                .stat-card.navy .accent-bar { background: var(--primary); }
-                .stat-card.green .accent-bar { background: #16a34a; }
+                .stat-card.pink .accent-bar {
+                    background: #e8197d;
+                }
+
+                .stat-card.gold .accent-bar {
+                    background: #d4a017;
+                }
+
+                .stat-card.purple .accent-bar {
+                    background: #7c3aed;
+                }
+
+                .stat-card.navy .accent-bar {
+                    background: var(--primary);
+                }
+
+                .stat-card.green .accent-bar {
+                    background: #16a34a;
+                }
 
                 .stat-card .icon-wrap {
                     width: 42px;
@@ -343,11 +358,30 @@
                     font-size: 18px;
                 }
 
-                .stat-card.pink .icon-wrap { background: #fce7f3; color: #e8197d; }
-                .stat-card.gold .icon-wrap { background: #fef9ee; color: #b47c0a; }
-                .stat-card.purple .icon-wrap { background: #ede9fe; color: #7c3aed; }
-                .stat-card.navy .icon-wrap { background: #e8edf9; color: var(--primary); }
-                .stat-card.green .icon-wrap { background: #dcfce7; color: #16a34a; }
+                .stat-card.pink .icon-wrap {
+                    background: #fce7f3;
+                    color: #e8197d;
+                }
+
+                .stat-card.gold .icon-wrap {
+                    background: #fef9ee;
+                    color: #b47c0a;
+                }
+
+                .stat-card.purple .icon-wrap {
+                    background: #ede9fe;
+                    color: #7c3aed;
+                }
+
+                .stat-card.navy .icon-wrap {
+                    background: #e8edf9;
+                    color: var(--primary);
+                }
+
+                .stat-card.green .icon-wrap {
+                    background: #dcfce7;
+                    color: #16a34a;
+                }
 
                 .stat-card .stat-label {
                     font-size: 12px;
@@ -433,14 +467,44 @@
                 display: inline-block;
             }
 
-            .status-pending { background: #fffbeb; color: #b45309; border: 0.5px solid #fde68a; }
-            .status-approved { background: #f0fdf4; color: #166534; border: 0.5px solid #bbf7d0; }
-            .status-rejected { background: #fef2f2; color: #991b1b; border: 0.5px solid #fecaca; }
-            .status-head-approved { background: #ecfeff; color: #155e75; border: 0.5px solid #a5f3fc; }
+            .status-pending {
+                background: #fffbeb;
+                color: #b45309;
+                border: 0.5px solid #fde68a;
+            }
 
-            .priority-high { background: #ffe4ef; color: #c0145f; }
-            .priority-medium { background: #fef3c7; color: #92400e; }
-            .priority-low { background: #f1f5f9; color: #64748b; }
+            .status-approved {
+                background: #f0fdf4;
+                color: #166534;
+                border: 0.5px solid #bbf7d0;
+            }
+
+            .status-rejected {
+                background: #fef2f2;
+                color: #991b1b;
+                border: 0.5px solid #fecaca;
+            }
+
+            .status-head-approved {
+                background: #ecfeff;
+                color: #155e75;
+                border: 0.5px solid #a5f3fc;
+            }
+
+            .priority-high {
+                background: #ffe4ef;
+                color: #c0145f;
+            }
+
+            .priority-medium {
+                background: #fef3c7;
+                color: #92400e;
+            }
+
+            .priority-low {
+                background: #f1f5f9;
+                color: #64748b;
+            }
 
             .tag-pill {
                 background: var(--primary);
@@ -472,8 +536,13 @@
                 border-bottom: 0.5px solid #f1f5f9;
             }
 
-            .table tbody tr:last-child td { border-bottom: none; }
-            .table tbody tr:hover { background: #f8fafc; }
+            .table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            .table tbody tr:hover {
+                background: #f8fafc;
+            }
 
             /* Buttons */
             .btn-primary {
@@ -513,7 +582,10 @@
                 margin-top: 10px;
             }
 
-                .balance-progress .fill { height: 100%; border-radius: 4px; }
+                .balance-progress .fill {
+                    height: 100%;
+                    border-radius: 4px;
+                }
 
             /* Empty state */
             .empty-state {
@@ -548,22 +620,33 @@
                     left: 240px;
                 }
 
-                @@media (min-width: 1280px) {
-                    .footer.with-sidebar { left: 260px; }
+            @@media (min-width: 1280px) {
+                .footer.with-sidebar {
+                    left: 260px;
                 }
+            }
 
-                @@media (min-width: 992px) and (max-width: 1279px) {
-                    .footer.with-sidebar { left: 220px; }
+            @@media (min-width: 992px) and (max-width: 1279px) {
+                .footer.with-sidebar {
+                    left: 220px;
                 }
+            }
 
-                @@media (max-width: 991px) {
-                    .footer.with-sidebar { left: 0; }
+            @@media (max-width: 991px) {
+                .footer.with-sidebar {
+                    left: 0;
                 }
+            }
 
-                .footer span { color: var(--accent); font-weight: 600; }
+            .footer span {
+                color: var(--accent);
+                font-weight: 600;
+            }
 
             /* Profile dropdown */
-            .no-caret::after { display: none !important; }
+            .no-caret::after {
+                display: none !important;
+            }
 
             .profile-trigger-icon {
                 font-size: 1.5rem;
@@ -572,7 +655,10 @@
                 cursor: pointer;
             }
 
-                .profile-trigger-icon:hover { color: #0B1F66; transform: scale(1.05); }
+                .profile-trigger-icon:hover {
+                    color: #0B1F66;
+                    transform: scale(1.05);
+                }
 
             .profile-dropdown-card {
                 min-width: 280px;
@@ -606,7 +692,10 @@
                 border: 1px solid #cbd5e1;
             }
 
-            .user-meta-details { display: flex; flex-direction: column; }
+            .user-meta-details {
+                display: flex;
+                flex-direction: column;
+            }
 
             .user-display-name {
                 font-size: 13.5px;
@@ -647,53 +736,185 @@
                 flex-shrink: 0;
             }
 
-            .profile-routing-link .dropdown-item:hover .link-icon { color: var(--primary); }
+            .profile-routing-link .dropdown-item:hover .link-icon {
+                color: var(--primary);
+            }
 
-            .link-title { display: block; font-size: 13px; font-weight: 600; color: #334155; }
-            .link-subtitle { display: block; font-size: 11px; color: #94a3b8; }
+            .link-title {
+                display: block;
+                font-size: 13px;
+                font-weight: 600;
+                color: #334155;
+            }
+
+            .link-subtitle {
+                display: block;
+                font-size: 11px;
+                color: #94a3b8;
+            }
 
             /* Responsive */
             @@media (min-width: 1280px) {
-                .sidebar { width: 260px; }
-                .navbar-logo { width: 260px; }
-                .header-logo { height: 54px; max-width: 190px; }
-                .menu-toggle { left: 270px; }
-                .content-area { margin-left: 260px; width: calc(100% - 260px); }
-                .college-title { font-size: 22px; width: min(960px, calc(100% - 340px)); }
-                .sidebar::after { width: 270px; height: 270px; }
+                .sidebar {
+                    width: 260px;
+                }
+
+                .navbar-logo {
+                    width: 260px;
+                }
+
+                .header-logo {
+                    height: 54px;
+                    max-width: 190px;
+                }
+
+                .menu-toggle {
+                    left: 270px;
+                }
+
+                .content-area {
+                    margin-left: 260px;
+                    width: calc(100% - 260px);
+                }
+
+                .college-title {
+                    font-size: 22px;
+                    width: min(960px, calc(100% - 340px));
+                }
+
+                .sidebar::after {
+                    width: 270px;
+                    height: 270px;
+                }
             }
 
             @@media (min-width: 992px) and (max-width: 1279px) {
-                .sidebar { width: 220px; }
-                .navbar-logo { width: 220px; }
-                .header-logo { height: 48px; max-width: 160px; }
-                .menu-toggle { left: 230px; }
-                .content-area { margin-left: 220px; width: calc(100% - 220px); }
-                .sidebar .nav-link { font-size: 12.5px; padding: 8px 10px; }
-                .college-title { font-size: 19px; width: min(800px, calc(100% - 300px)); }
-                .sidebar::after { width: 230px; height: 230px; }
+                .sidebar {
+                    width: 220px;
+                }
+
+                .navbar-logo {
+                    width: 220px;
+                }
+
+                .header-logo {
+                    height: 48px;
+                    max-width: 160px;
+                }
+
+                .menu-toggle {
+                    left: 230px;
+                }
+
+                .content-area {
+                    margin-left: 220px;
+                    width: calc(100% - 220px);
+                }
+
+                .sidebar .nav-link {
+                    font-size: 12.5px;
+                    padding: 8px 10px;
+                }
+
+                .college-title {
+                    font-size: 19px;
+                    width: min(800px, calc(100% - 300px));
+                }
+
+                .sidebar::after {
+                    width: 230px;
+                    height: 230px;
+                }
             }
 
             @@media (max-width: 991px) {
-                .navbar-logo { left: 8px; width: 52px; height: 60px; border-right: none; }
-                .header-logo { height: 42px; max-width: 46px; }
-                .menu-toggle { left: 66px; display: flex; }
-                .college-title { font-size: 15px; width: min(650px, calc(100% - 180px)); }
-                .sidebar { left: -260px; width: 240px; }
-                .sidebar.active { left: 0; }
-                .content-area { margin-left: 0; width: 100%; }
+                .navbar-logo {
+                    left: 8px;
+                    width: 52px;
+                    height: 60px;
+                    border-right: none;
+                }
+
+                .header-logo {
+                    height: 42px;
+                    max-width: 46px;
+                }
+
+                .menu-toggle {
+                    left: 66px;
+                    display: flex;
+                }
+
+                .college-title {
+                    font-size: 15px;
+                    width: min(650px, calc(100% - 180px));
+                }
+
+                .sidebar {
+                    left: -260px;
+                    width: 240px;
+                }
+
+                    .sidebar.active {
+                        left: 0;
+                    }
+
+                .content-area {
+                    margin-left: 0;
+                    width: 100%;
+                }
             }
 
             @@media (max-width: 575px) {
-                .top-header { height: 54px; }
-                .navbar-logo { left: 7px; width: 44px; height: 54px; }
-                .header-logo { height: 36px; max-width: 40px; }
-                .menu-toggle { left: 54px; width: 36px; height: 36px; font-size: 15px; }
-                .college-title { font-size: 13px; width: calc(100% - 160px); }
-                .content-area { padding-top: 54px; }
-                .sidebar { width: 82%; max-width: 280px; left: -100%; }
-                .sidebar::after { width: 220px; height: 220px; bottom: 76px; }
-                .content-wrapper { padding: 1.25rem 1rem; }
+                .top-header {
+                    height: 54px;
+                }
+
+                .navbar-logo {
+                    left: 7px;
+                    width: 44px;
+                    height: 54px;
+                }
+
+                .header-logo {
+                    height: 36px;
+                    max-width: 40px;
+                }
+
+                .menu-toggle {
+                    left: 54px;
+                    width: 36px;
+                    height: 36px;
+                    font-size: 15px;
+                }
+
+                .college-title {
+                    font-size: 13px;
+                    left: 96px;
+                    transform: none;
+                    text-align: left;
+                    width: calc(100% - 156px);
+                }
+
+                .content-area {
+                    padding-top: 54px;
+                }
+
+                .sidebar {
+                    width: 82%;
+                    max-width: 280px;
+                    left: -100%;
+                }
+
+                    .sidebar::after {
+                        width: 220px;
+                        height: 220px;
+                        bottom: 76px;
+                    }
+
+                .content-wrapper {
+                    padding: 1.25rem 1rem;
+                }
             }
     </style>
 </head>
@@ -725,10 +946,6 @@
                     <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Departments" ? "active" : "")"
                        asp-controller="Admin" asp-action="Departments">
                         <span class="nav-icon"><i class="fas fa-building"></i></span> Departments
-                    </a>
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notice" ? "active" : "")"
-                       asp-controller="Notice" asp-action="Index">
-                        <span class="nav-icon"><i class="fas fa-bell"></i></span> Notice Board
                     </a>
                     <hr class="sidebar-divider" />
                     <span class="menu-label">System</span>
@@ -762,10 +979,6 @@
                        asp-controller="DepartmentHead" asp-action="StaffList">
                         <span class="nav-icon"><i class="fas fa-user-friends"></i></span> My Staff
                     </a>
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notice" ? "active" : "")"
-                       asp-controller="Notice" asp-action="Index">
-                        <span class="nav-icon"><i class="fas fa-bell"></i></span> Notice Board
-                    </a>
                     <hr class="sidebar-divider" />
                     <span class="menu-label">Account</span>
                     <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Account" && ViewContext.RouteData.Values["action"]?.ToString() == "Profile" ? "active" : "")"
@@ -773,7 +986,7 @@
                         <span class="nav-icon"><i class="fas fa-user"></i></span> My Profile
                     </a>
                 }
-                else if (User.IsInRole("Staff"))
+                else if (User.IsInRole("Staff") || User.IsInRole("Student"))
                 {
                     <span class="menu-label">Main</span>
                     <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Dashboard" ? "active" : "")"
@@ -791,10 +1004,6 @@
                     <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "LeaveBalance" ? "active" : "")"
                        asp-controller="Staff" asp-action="LeaveBalance">
                         <span class="nav-icon"><i class="fas fa-balance-scale"></i></span> Leave Balance
-                    </a>
-                    <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Notice" ? "active" : "")"
-                       asp-controller="Notice" asp-action="Index">
-                        <span class="nav-icon"><i class="fas fa-bell"></i></span> Notice Board
                     </a>
                     <hr class="sidebar-divider" />
                     <span class="menu-label">Account</span>
@@ -888,7 +1097,7 @@
                                     </div>
                                 </a>
                             }
-                            else if (User.IsInRole("Staff"))
+                            else if (User.IsInRole("Staff") || User.IsInRole("Student"))
                             {
                                 <a class="dropdown-item py-3" asp-controller="Staff" asp-action="Profile">
                                     <i class="fas fa-id-card link-icon"></i>
